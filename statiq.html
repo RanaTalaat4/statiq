@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StatIQ — Statistical Analysis Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0a0c10;
+  --bg2: #111318;
+  --bg3: #181c23;
+  --bg4: #1e232c;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #e8eaf0;
+  --text2: #8b91a0;
+  --text3: #555b6a;
+  --accent: #4f8ef7;
+  --accent2: #2d6de8;
+  --accent-glow: rgba(79,142,247,0.15);
+  --green: #34d399;
+  --green-bg: rgba(52,211,153,0.1);
+  --amber: #fbbf24;
+  --amber-bg: rgba(251,191,36,0.1);
+  --red: #f87171;
+  --red-bg: rgba(248,113,113,0.1);
+  --purple: #a78bfa;
+  --purple-bg: rgba(167,139,250,0.1);
+  --medical: #34d399;
+  --arch: #fbbf24;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --font-display: 'DM Serif Display', serif;
+  --font-body: 'Outfit', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.6;min-height:100vh;overflow-x:hidden}
+::selection{background:var(--accent);color:#fff}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
+
+/* Layout */
+.shell{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:220px;min-width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:0;z-index:10}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:56px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0}
+.content{flex:1;overflow-y:auto;padding:28px}
+
+/* Sidebar */
+.logo{padding:20px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.logo-mark{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:13px;font-weight:500;color:#fff;flex-shrink:0}
+.logo-text{font-family:var(--font-display);font-size:20px;color:var(--text);letter-spacing:-0.01em}
+.logo-text span{color:var(--accent)}
+.nav{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:2px}
+.nav-section{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:12px 10px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:400;transition:all .15s;white-space:nowrap}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--accent-glow);color:var(--accent);font-weight:500}
+.nav-item .icon{width:16px;height:16px;flex-shrink:0;opacity:.7}
+.nav-item.active .icon{opacity:1}
+.nav-badge{margin-left:auto;background:var(--bg4);color:var(--text3);font-size:10px;padding:1px 6px;border-radius:10px;font-family:var(--font-mono)}
+.sidebar-footer{padding:12px 10px;border-top:1px solid var(--border)}
+.module-badge{display:flex;align-items:center;gap:8px;padding:10px 10px;background:var(--bg3);border-radius:8px;border:1px solid var(--border)}
+.module-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* Top bar */
+.topbar-title{font-size:15px;font-weight:500;color:var(--text);flex:1}
+.topbar-sub{font-size:12px;color:var(--text3)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text);transition:all .15s;white-space:nowrap;font-family:var(--font-body)}
+.btn:hover{background:var(--bg4);border-color:rgba(255,255,255,.2)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent2);border-color:var(--accent2)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--text2)}
+.btn-ghost:hover{background:var(--bg3);color:var(--text);border-color:var(--border)}
+
+/* Cards */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
+.card-sm{padding:16px}
+.card-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px}
+.card-sub{font-size:12px;color:var(--text3)}
+
+/* Stat cards */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;inset:0;background:var(--accent-glow);opacity:0;transition:.2s}
+.stat-card:hover::before{opacity:1}
+.stat-label{font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.stat-val{font-size:26px;font-weight:300;color:var(--text);font-family:var(--font-mono);letter-spacing:-0.03em;line-height:1}
+.stat-val span{font-size:13px;color:var(--text3);margin-left:4px}
+.stat-change{font-size:11px;margin-top:6px;color:var(--text3)}
+.stat-change.up{color:var(--green)}
+.stat-change.down{color:var(--red)}
+
+/* Grid layouts */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.grid-col-span-2{grid-column:span 2}
+
+/* Charts */
+.chart-wrap{position:relative;height:220px}
+.chart-wrap-tall{position:relative;height:280px}
+
+/* Table */
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{padding:8px 12px;text-align:left;font-size:11px;font-weight:500;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--border);white-space:nowrap}
+.data-table td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text2)}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:var(--bg3);color:var(--text)}
+.data-table td:first-child{color:var(--text);font-weight:500}
+
+/* Editable grid */
+.editable-grid{width:100%;border-collapse:collapse;font-size:13px}
+.editable-grid th{background:var(--bg3);padding:8px 10px;text-align:left;font-size:11px;font-weight:500;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;border:1px solid var(--border);position:sticky;top:0}
+.editable-grid td{padding:0;border:1px solid var(--border)}
+.editable-grid td input{width:100%;background:transparent;border:none;color:var(--text);padding:8px 10px;font-size:13px;font-family:var(--font-mono);outline:none}
+.editable-grid td input:focus{background:var(--accent-glow)}
+.editable-grid tr:hover td{background:var(--bg3)}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-amber{background:var(--amber-bg);color:var(--amber)}
+.badge-red{background:var(--red-bg);color:var(--red)}
+.badge-blue{background:var(--accent-glow);color:var(--accent)}
+.badge-purple{background:var(--purple-bg);color:var(--purple)}
+.badge-gray{background:var(--bg4);color:var(--text3)}
+
+/* Risk gauge */
+.risk-bar{height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;margin-top:4px}
+.risk-fill{height:100%;border-radius:4px;transition:width .6s ease}
+
+/* Upload zone */
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:48px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg2)}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:var(--accent-glow)}
+.upload-icon{font-size:40px;margin-bottom:12px;opacity:.4}
+.upload-title{font-size:16px;font-weight:500;color:var(--text);margin-bottom:6px}
+.upload-sub{font-size:13px;color:var(--text3)}
+
+/* Insight cards */
+.insight{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;border-left:3px solid var(--accent)}
+.insight.green{border-left-color:var(--green)}
+.insight.amber{border-left-color:var(--amber)}
+.insight.red{border-left-color:var(--red)}
+.insight-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px}
+.insight-body{font-size:12px;color:var(--text2);line-height:1.5}
+
+/* Progress */
+.progress{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;border-radius:3px;background:var(--accent);transition:width .8s ease}
+
+/* Tabs */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px}
+.tab{padding:10px 16px;font-size:13px;font-weight:400;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500}
+
+/* Section header */
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-title{font-size:16px;font-weight:600;color:var(--text)}
+.section-sub{font-size:12px;color:var(--text3);margin-top:2px}
+
+/* Correlation matrix */
+.corr-cell{width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:10px;font-family:var(--font-mono);border-radius:4px;cursor:default}
+
+/* Workflow stepper */
+.stepper{display:flex;align-items:center;gap:0;margin-bottom:28px}
+.step{display:flex;align-items:center;gap:8px;flex:1}
+.step-circle{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;border:1.5px solid var(--border2);color:var(--text3);font-family:var(--font-mono)}
+.step.done .step-circle{background:var(--green);border-color:var(--green);color:#000}
+.step.active .step-circle{background:var(--accent);border-color:var(--accent);color:#fff}
+.step-label{font-size:12px;color:var(--text3);font-weight:400}
+.step.active .step-label{color:var(--text);font-weight:500}
+.step.done .step-label{color:var(--green)}
+.step-line{flex:1;height:1px;background:var(--border);margin:0 4px}
+.step.done + .step .step-line,.step-line.done{background:var(--green)}
+
+/* Pages */
+.page{display:none}
+.page.active{display:block}
+
+/* Animations */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.page.active{animation:fadeIn .25s ease}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.pulse{animation:pulse 2s infinite}
+
+/* Select/input */
+select,input[type=text],input[type=number]{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:7px 10px;border-radius:8px;font-size:13px;font-family:var(--font-body);outline:none;transition:.15s}
+select:focus,input[type=text]:focus,input[type=number]:focus{border-color:var(--accent)}
+
+/* Toast */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:12px 16px;font-size:13px;color:var(--text);animation:fadeIn .2s ease;box-shadow:0 8px 32px rgba(0,0,0,.4);max-width:300px}
+.toast.success{border-left:3px solid var(--green)}
+.toast.error{border-left:3px solid var(--red)}
+
+/* Dot indicator */
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dot-green{background:var(--green)}
+.dot-amber{background:var(--amber)}
+.dot-red{background:var(--red)}
+.dot-blue{background:var(--accent)}
+
+/* Header */
+.page-header{margin-bottom:24px}
+.page-header h1{font-family:var(--font-display);font-size:28px;color:var(--text);line-height:1.2;margin-bottom:4px}
+.page-header p{font-size:13px;color:var(--text3)}
+
+/* Empty state */
+.empty{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-icon{font-size:36px;margin-bottom:12px;opacity:.3}
+.empty-title{font-size:15px;color:var(--text2);margin-bottom:6px}
+
+/* Tooltip */
+.tooltip-wrap{position:relative}
+.tooltip-wrap:hover .tooltip{opacity:1;pointer-events:all}
+.tooltip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--bg4);border:1px solid var(--border2);color:var(--text);font-size:11px;padding:4px 8px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:.15s;z-index:100}
+
+/* Mobile: hide sidebar on small */
+@media(max-width:700px){.sidebar{display:none}.stat-grid{grid-template-columns:1fr 1fr}.grid-3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">S</div>
+      <div class="logo-text">Stat<span>IQ</span></div>
+    </div>
+    <nav class="nav">
+      <div class="nav-section">Workspace</div>
+      <div class="nav-item active" onclick="goPage('dashboard')">
+        <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" onclick="goPage('upload')">
+        <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 10V2M5 5l3-3 3 3"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2"/></svg>
+        Upload Data
+        <span class="nav-badge" id="dataset-count">0</span>
+      </div>
+      <div class="nav-item" onclick="goPage('manual')">
+        <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="1.5"/><path d="M1 6h14M5 6v7M9 6v7"/></svg>
+        Manual Entry
+      </div>
+
+      <div class="nav-section">Analysis</div>
+      <div class="nav-item" onclick="goPage('descriptive')">
+        <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12l3-4 3 2 3-5 3 3"/></svg>
+        Descriptive Stats
+      </div>
+      <div class="nav-item" onclick="goPage('correlation')">
+        <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="4" cy="12" r="1.5"/><circle cx="8" cy="7" r="1.5"/><circle cx="12" cy="4" r="1.5"/><circle cx="6" cy="10" r="1.5"/><circle cx="10" cy="6" r="1.5"/></svg>
+        Correlation
+      </div>
+      <div class="nav-item" onclick="goPage('regression')">
+        <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 13l12-10"/><circle cx="4" cy="11" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="6" cy="10" r="1.5"/></svg>
+        Regression
+      </div>
+      <div class="nav-item" onclick="goPage('hypothesis')">
+        <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v12M4 6h8M3 10h10"/></svg>
+        Hypothesis Tests
+      </div>
+
+      <div class="nav-section">Modules</div>
+      <div class="nav-item" onclick="goPage('medical')">
+        <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v12M2 8h12"/><rect x="4" y="4" width="8" height="8" rx="2"/></svg>
+        Medical
+        <span class="badge badge-green" style="margin-left:auto;padding:1px 6px;font-size:10px">Active</span>
+      </div>
+      <div class="nav-item" onclick="goPage('archaeology')">
+        <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2c0 0-5 3-5 7a5 5 0 0010 0c0-4-5-7-5-7z"/><path d="M6 12l2-3 2 3"/></svg>
+        Archaeology
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="module-badge" id="module-indicator">
+        <div class="module-dot dot-blue"></div>
+        <span style="font-size:12px;color:var(--text2)">No dataset loaded</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main area -->
+  <div class="main">
+    <!-- Top bar -->
+    <div class="topbar">
+      <div style="flex:1">
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-sub" id="topbar-sub">Overview of your analysis workspace</div>
+      </div>
+      <button class="btn btn-sm" onclick="loadSampleData('medical')">Load Medical Sample</button>
+      <button class="btn btn-sm" onclick="loadSampleData('archaeology')">Load Archaeology Sample</button>
+      <button class="btn btn-primary btn-sm" onclick="goPage('upload')">+ New Dataset</button>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- DASHBOARD PAGE -->
+      <div id="page-dashboard" class="page active">
+        <div class="page-header">
+          <h1>Analysis <em style="color:var(--accent)">Dashboard</em></h1>
+          <p id="dash-dataset-info">No dataset loaded — upload data or use a sample to get started</p>
+        </div>
+
+        <!-- Stepper -->
+        <div class="stepper" id="workflow-stepper">
+          <div class="step done" id="step-upload"><div class="step-circle">✓</div><div class="step-label">Upload</div></div>
+          <div class="step-line" id="sl1"></div>
+          <div class="step done" id="step-detect"><div class="step-circle">✓</div><div class="step-label">Detect</div></div>
+          <div class="step-line" id="sl2"></div>
+          <div class="step done" id="step-validate"><div class="step-circle">✓</div><div class="step-label">Validate</div></div>
+          <div class="step-line" id="sl3"></div>
+          <div class="step active" id="step-analyze"><div class="step-circle">4</div><div class="step-label">Analyze</div></div>
+          <div class="step-line"></div>
+          <div class="step" id="step-viz"><div class="step-circle">5</div><div class="step-label">Visualize</div></div>
+          <div class="step-line"></div>
+          <div class="step" id="step-export"><div class="step-circle">6</div><div class="step-label">Export</div></div>
+        </div>
+
+        <div class="stat-grid" id="dash-stats">
+          <div class="stat-card"><div class="stat-label">Total Rows</div><div class="stat-val" id="s-rows">—</div><div class="stat-change">Records in dataset</div></div>
+          <div class="stat-card"><div class="stat-label">Columns</div><div class="stat-val" id="s-cols">—</div><div class="stat-change">Variables detected</div></div>
+          <div class="stat-card"><div class="stat-label">Dataset Type</div><div class="stat-val" style="font-size:18px" id="s-type">—</div><div class="stat-change">Auto-detected module</div></div>
+          <div class="stat-card"><div class="stat-label">Data Quality</div><div class="stat-val" id="s-quality">—<span>%</span></div><div class="stat-change">Completeness score</div></div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom:16px">
+          <div class="card">
+            <div class="section-hdr"><div><div class="card-title">Distribution Overview</div><div class="card-sub">First numeric variable</div></div></div>
+            <div class="chart-wrap"><canvas id="chart-hist"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="section-hdr"><div><div class="card-title">Variable Summary</div><div class="card-sub">Key descriptive statistics</div></div></div>
+            <div style="max-height:220px;overflow-y:auto">
+              <table class="data-table" id="dash-summary-table">
+                <thead><tr><th>Variable</th><th>Mean</th><th>Std Dev</th><th>Min</th><th>Max</th></tr></thead>
+                <tbody id="dash-summary-body"><tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px">Load a dataset to see statistics</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="section-hdr"><div><div class="card-title">AI Insights</div><div class="card-sub">Automated pattern detection</div></div><button class="btn btn-ghost btn-sm" onclick="generateInsights()">Refresh</button></div>
+            <div id="insights-container">
+              <div class="empty" style="padding:30px"><div class="empty-icon">✦</div><div class="empty-title" style="font-size:13px">Load a dataset to generate insights</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="section-hdr"><div><div class="card-title">Dataset Preview</div><div class="card-sub">First 8 rows</div></div></div>
+            <div style="overflow-x:auto;max-height:220px;overflow-y:auto">
+              <table class="data-table" id="preview-table">
+                <thead id="preview-head"></thead>
+                <tbody id="preview-body"><tr><td style="color:var(--text3);padding:20px;text-align:center">No data loaded</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- UPLOAD PAGE -->
+      <div id="page-upload" class="page">
+        <div class="page-header"><h1>Upload <em style="color:var(--accent)">Data</em></h1><p>Import Excel, CSV, or use a pre-loaded sample dataset</p></div>
+        <div class="grid-2">
+          <div>
+            <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+              <div class="upload-icon">⬆</div>
+              <div class="upload-title">Drop file here or click to browse</div>
+              <div class="upload-sub" style="margin-top:8px">Supports .xlsx, .csv, .tsv</div>
+              <div style="margin-top:16px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+                <span class="badge badge-gray">.xlsx</span>
+                <span class="badge badge-gray">.csv</span>
+                <span class="badge badge-gray">.tsv</span>
+              </div>
+            </div>
+            <input type="file" id="file-input" accept=".csv,.xlsx,.tsv" style="display:none" onchange="handleFileSelect(event)">
+            <div id="upload-status" style="margin-top:12px"></div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:12px">Sample Datasets</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)">
+                <div><div style="font-size:13px;font-weight:500;color:var(--text)">Medical Patient Dataset</div><div style="font-size:11px;color:var(--text3);margin-top:2px">100 patients · 12 variables · Risk scoring</div></div>
+                <div style="display:flex;gap:6px"><span class="badge badge-green">Medical</span><button class="btn btn-sm" onclick="loadSampleData('medical')">Load</button></div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)">
+                <div><div style="font-size:13px;font-weight:500;color:var(--text)">Archaeology Artifacts</div><div style="font-size:11px;color:var(--text3);margin-top:2px">80 artifacts · 10 variables · Site analysis</div></div>
+                <div style="display:flex;gap:6px"><span class="badge badge-amber">Archaeology</span><button class="btn btn-sm" onclick="loadSampleData('archaeology')">Load</button></div>
+              </div>
+            </div>
+            <div style="margin-top:16px;padding:12px;background:var(--accent-glow);border-radius:var(--radius);border:1px solid rgba(79,142,247,.2)">
+              <div style="font-size:12px;font-weight:500;color:var(--accent);margin-bottom:4px">Auto-detection enabled</div>
+              <div style="font-size:11px;color:var(--text2);line-height:1.5">StatIQ automatically detects whether your dataset is Medical or Archaeology based on column names and data patterns.</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="uploaded-datasets" style="margin-top:24px">
+          <div class="section-hdr"><div class="section-title">Loaded Datasets</div></div>
+          <div id="datasets-list"></div>
+        </div>
+      </div>
+
+      <!-- MANUAL ENTRY PAGE -->
+      <div id="page-manual" class="page">
+        <div class="page-header"><h1>Manual <em style="color:var(--accent)">Entry</em></h1><p>Enter data directly in the spreadsheet editor</p></div>
+        <div class="card" style="margin-bottom:16px">
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <div>
+              <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px">Rows</label>
+              <input type="number" id="grid-rows" value="8" min="2" max="50" style="width:70px">
+            </div>
+            <div>
+              <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px">Columns</label>
+              <input type="number" id="grid-cols" value="5" min="2" max="20" style="width:70px">
+            </div>
+            <button class="btn" style="margin-top:18px" onclick="buildGrid()">Build Grid</button>
+            <button class="btn btn-primary" style="margin-top:18px" onclick="importManualData()">Import Data →</button>
+          </div>
+        </div>
+        <div class="card" style="overflow:auto">
+          <div id="grid-container" style="overflow:auto;max-height:400px"></div>
+        </div>
+      </div>
+
+      <!-- DESCRIPTIVE STATS PAGE -->
+      <div id="page-descriptive" class="page">
+        <div class="page-header"><h1>Descriptive <em style="color:var(--accent)">Statistics</em></h1><p>Mean, median, standard deviation, variance and more</p></div>
+        <div id="desc-no-data" class="empty"><div class="empty-icon">📊</div><div class="empty-title">Load a dataset first</div><p style="font-size:12px;margin-top:4px">Go to Upload Data and load a sample</p><button class="btn btn-primary" style="margin-top:16px" onclick="loadSampleData('medical')">Load Medical Sample</button></div>
+        <div id="desc-content" style="display:none">
+          <div class="stat-grid" id="desc-overview"></div>
+          <div class="grid-2" style="margin-bottom:16px">
+            <div class="card">
+              <div class="section-hdr"><div class="card-title">Select Variable</div></div>
+              <select id="desc-var-select" onchange="updateDescChart()" style="width:100%;margin-bottom:14px"></select>
+              <div class="chart-wrap-tall"><canvas id="chart-desc"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="card-title" style="margin-bottom:12px">Statistics Table</div>
+              <table class="data-table" id="desc-stats-table">
+                <thead><tr><th>Statistic</th><th>Value</th></tr></thead>
+                <tbody id="desc-stats-body"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px">All Variables — Summary</div>
+            <div style="overflow-x:auto">
+              <table class="data-table" id="desc-all-table">
+                <thead><tr><th>Variable</th><th>N</th><th>Mean</th><th>Median</th><th>Std Dev</th><th>Variance</th><th>Min</th><th>Max</th><th>Skewness</th></tr></thead>
+                <tbody id="desc-all-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CORRELATION PAGE -->
+      <div id="page-correlation" class="page">
+        <div class="page-header"><h1>Correlation <em style="color:var(--accent)">Analysis</em></h1><p>Pearson correlation coefficients between numeric variables</p></div>
+        <div id="corr-no-data" class="empty"><div class="empty-icon">🔗</div><div class="empty-title">Load a dataset first</div><button class="btn btn-primary" style="margin-top:16px" onclick="loadSampleData('medical')">Load Medical Sample</button></div>
+        <div id="corr-content" style="display:none">
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-title" style="margin-bottom:14px">Correlation Matrix</div>
+              <div id="corr-matrix" style="overflow-x:auto"></div>
+            </div>
+            <div class="card">
+              <div class="card-title" style="margin-bottom:14px">Scatter Plot</div>
+              <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+                <select id="corr-x" onchange="updateScatter()" style="flex:1"></select>
+                <span style="color:var(--text3);padding-top:8px">vs</span>
+                <select id="corr-y" onchange="updateScatter()" style="flex:1"></select>
+              </div>
+              <div class="chart-wrap-tall"><canvas id="chart-scatter"></canvas></div>
+              <div id="corr-value" style="text-align:center;margin-top:10px;font-family:var(--font-mono);font-size:13px;color:var(--text2)"></div>
+            </div>
+          </div>
+          <div class="card" style="margin-top:16px">
+            <div class="card-title" style="margin-bottom:12px">Significant Correlations</div>
+            <table class="data-table" id="corr-table">
+              <thead><tr><th>Variable 1</th><th>Variable 2</th><th>r</th><th>Strength</th><th>Direction</th></tr></thead>
+              <tbody id="corr-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- REGRESSION PAGE -->
+      <div id="page-regression" class="page">
+        <div class="page-header"><h1>Linear <em style="color:var(--accent)">Regression</em></h1><p>Predict outcomes using linear statistical models</p></div>
+        <div id="reg-no-data" class="empty"><div class="empty-icon">📈</div><div class="empty-title">Load a dataset first</div><button class="btn btn-primary" style="margin-top:16px" onclick="loadSampleData('medical')">Load Medical Sample</button></div>
+        <div id="reg-content" style="display:none">
+          <div class="card" style="margin-bottom:16px">
+            <div class="grid-2">
+              <div>
+                <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:6px">Dependent Variable (Y)</label>
+                <select id="reg-y" style="width:100%"></select>
+              </div>
+              <div>
+                <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:6px">Independent Variable (X)</label>
+                <select id="reg-x" style="width:100%"></select>
+              </div>
+            </div>
+            <button class="btn btn-primary" style="margin-top:14px" onclick="runRegression()">Run Regression</button>
+          </div>
+          <div id="reg-results" style="display:none">
+            <div class="stat-grid" id="reg-stats-grid"></div>
+            <div class="grid-2">
+              <div class="card">
+                <div class="card-title" style="margin-bottom:14px">Regression Plot</div>
+                <div class="chart-wrap-tall"><canvas id="chart-reg"></canvas></div>
+              </div>
+              <div class="card">
+                <div class="card-title" style="margin-bottom:12px">Model Summary</div>
+                <table class="data-table">
+                  <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+                  <tbody id="reg-model-body"></tbody>
+                </table>
+                <div id="reg-insight" class="insight" style="margin-top:12px;display:none"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HYPOTHESIS PAGE -->
+      <div id="page-hypothesis" class="page">
+        <div class="page-header"><h1>Hypothesis <em style="color:var(--accent)">Testing</em></h1><p>T-tests and chi-square tests for statistical inference</p></div>
+        <div id="hyp-no-data" class="empty"><div class="empty-icon">⚖️</div><div class="empty-title">Load a dataset first</div><button class="btn btn-primary" style="margin-top:16px" onclick="loadSampleData('medical')">Load Medical Sample</button></div>
+        <div id="hyp-content" style="display:none">
+          <div class="tabs">
+            <div class="tab active" onclick="switchHypTab('ttest',this)">One-Sample T-Test</div>
+            <div class="tab" onclick="switchHypTab('ttest2',this)">Two-Sample T-Test</div>
+            <div class="tab" onclick="switchHypTab('chi',this)">Chi-Square</div>
+          </div>
+          <div id="hyp-ttest">
+            <div class="grid-2">
+              <div class="card">
+                <div class="card-title" style="margin-bottom:12px">Test Parameters</div>
+                <div style="margin-bottom:12px"><label style="font-size:12px;color:var(--text3);display:block;margin-bottom:6px">Variable</label><select id="ttest-var" style="width:100%"></select></div>
+                <div style="margin-bottom:12px"><label style="font-size:12px;color:var(--text3);display:block;margin-bottom:6px">Hypothesised Mean (μ₀)</label><input type="number" id="ttest-mu" value="0" style="width:100%"></div>
+                <button class="btn btn-primary" onclick="runTtest()">Run T-Test</button>
+              </div>
+              <div class="card" id="ttest-results">
+                <div class="card-title" style="margin-bottom:12px">Results</div>
+                <div id="ttest-output" style="color:var(--text3);font-size:13px">Run a test to see results</div>
+              </div>
+            </div>
+          </div>
+          <div id="hyp-ttest2" style="display:none">
+            <div class="grid-2">
+              <div class="card">
+                <div class="card-title" style="margin-bottom:12px">Test Parameters</div>
+                <div style="margin-bottom:12px"><label style="font-size:12px;color:var(--text3);display:block;margin-bottom:6px">Variable 1</label><select id="ttest2-v1" style="width:100%"></select></div>
+                <div style="margin-bottom:12px"><label style="font-size:12px;color:var(--text3);display:block;margin-bottom:6px">Variable 2</label><select id="ttest2-v2" style="width:100%"></select></div>
+                <button class="btn btn-primary" onclick="runTtest2()">Run Two-Sample T-Test</button>
+              </div>
+              <div class="card" id="ttest2-results">
+                <div class="card-title" style="margin-bottom:12px">Results</div>
+                <div id="ttest2-output" style="color:var(--text3);font-size:13px">Run a test to see results</div>
+              </div>
+            </div>
+          </div>
+          <div id="hyp-chi" style="display:none">
+            <div class="grid-2">
+              <div class="card">
+                <div class="card-title" style="margin-bottom:12px">Chi-Square Test</div>
+                <div style="margin-bottom:12px"><label style="font-size:12px;color:var(--text3);display:block;margin-bottom:6px">Categorical Variable</label><select id="chi-var" style="width:100%"></select></div>
+                <button class="btn btn-primary" onclick="runChiSquare()">Run Chi-Square</button>
+              </div>
+              <div class="card">
+                <div class="card-title" style="margin-bottom:12px">Results</div>
+                <div id="chi-output" style="color:var(--text3);font-size:13px">Run a test to see results</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MEDICAL PAGE -->
+      <div id="page-medical" class="page">
+        <div class="page-header"><h1>Medical <em style="color:var(--medical)">Analysis</em></h1><p>Patient risk scoring, population summaries, and health indicators</p></div>
+        <div id="med-no-data" class="empty"><div class="empty-icon">🏥</div><div class="empty-title">Load a medical dataset</div><button class="btn btn-primary" style="margin-top:16px;background:var(--medical);border-color:var(--medical);color:#000" onclick="loadSampleData('medical')">Load Medical Sample</button></div>
+        <div id="med-content" style="display:none">
+          <div class="stat-grid" id="med-stats"></div>
+          <div class="grid-3" style="margin-bottom:16px">
+            <div class="card grid-col-span-2">
+              <div class="card-title" style="margin-bottom:14px">Patient Risk Distribution</div>
+              <div class="chart-wrap"><canvas id="chart-med-risk"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="card-title" style="margin-bottom:14px">Risk Level Summary</div>
+              <div id="risk-summary"></div>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-title" style="margin-bottom:14px">Age Distribution</div>
+              <div class="chart-wrap"><canvas id="chart-med-age"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="card-title" style="margin-bottom:14px">Patient Risk Scores</div>
+              <div style="overflow-y:auto;max-height:220px">
+                <table class="data-table" id="med-patients-table">
+                  <thead><tr><th>Patient</th><th>Age</th><th>Diagnosis</th><th>Risk Score</th><th>Level</th></tr></thead>
+                  <tbody id="med-patients-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ARCHAEOLOGY PAGE -->
+      <div id="page-archaeology" class="page">
+        <div class="page-header"><h1>Archaeology <em style="color:var(--arch)">Analysis</em></h1><p>Artifact classification, site distribution, and temporal patterns</p></div>
+        <div id="arch-no-data" class="empty"><div class="empty-icon">⚱️</div><div class="empty-title">Load an archaeology dataset</div><button class="btn btn-primary" style="margin-top:16px;background:var(--amber);border-color:var(--amber);color:#000" onclick="loadSampleData('archaeology')">Load Archaeology Sample</button></div>
+        <div id="arch-content" style="display:none">
+          <div class="stat-grid" id="arch-stats"></div>
+          <div class="grid-2" style="margin-bottom:16px">
+            <div class="card">
+              <div class="card-title" style="margin-bottom:14px">Artifact Categories</div>
+              <div class="chart-wrap"><canvas id="chart-arch-cat"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="card-title" style="margin-bottom:14px">Distribution by Site</div>
+              <div class="chart-wrap"><canvas id="chart-arch-site"></canvas></div>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-title" style="margin-bottom:14px">Period Timeline</div>
+              <div class="chart-wrap"><canvas id="chart-arch-period"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="card-title" style="margin-bottom:14px">Artifact Registry</div>
+              <div style="overflow-y:auto;max-height:220px">
+                <table class="data-table" id="arch-table">
+                  <thead><tr><th>ID</th><th>Category</th><th>Site</th><th>Period</th><th>Classification</th></tr></thead>
+                  <tbody id="arch-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+// ─── Global state ──────────────────────────────────────────────────────────
+let state = {
+  dataset: null,
+  columns: [],
+  numericCols: [],
+  categoricCols: [],
+  moduleType: 'general',
+  charts: {}
+};
+
+// ─── Chart registry ────────────────────────────────────────────────────────
+function destroyChart(id) {
+  if (state.charts[id]) { state.charts[id].destroy(); delete state.charts[id]; }
+}
+function mkChart(id, config) {
+  destroyChart(id);
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  state.charts[id] = new Chart(ctx, config);
+  return state.charts[id];
+}
+
+const CHART_COLORS = ['#4f8ef7','#34d399','#fbbf24','#a78bfa','#f87171','#38bdf8','#fb923c','#e879f9','#4ade80','#facc15'];
+const chartDefaults = {
+  plugins: { legend: { labels: { color: '#8b91a0', font: { family: 'DM Mono', size: 11 }, boxWidth: 12, padding: 12 } } },
+  scales: {
+    x: { ticks: { color: '#555b6a', font: { family: 'DM Mono', size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' }, border: { color: 'rgba(255,255,255,0.07)' } },
+    y: { ticks: { color: '#555b6a', font: { family: 'DM Mono', size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' }, border: { color: 'rgba(255,255,255,0.07)' } }
+  }
+};
+
+// ─── Navigation ────────────────────────────────────────────────────────────
+const pageNames = {
+  dashboard:'Dashboard', upload:'Upload Data', manual:'Manual Entry',
+  descriptive:'Descriptive Statistics', correlation:'Correlation Analysis',
+  regression:'Linear Regression', hypothesis:'Hypothesis Testing',
+  medical:'Medical Module', archaeology:'Archaeology Module'
+};
+const pageSubs = {
+  dashboard:'Overview of your analysis workspace',
+  upload:'Import Excel, CSV, or enter data manually',
+  manual:'Spreadsheet editor for direct data entry',
+  descriptive:'Mean, median, standard deviation, variance',
+  correlation:'Pearson correlation matrix and scatter plots',
+  regression:'Linear regression modelling and prediction',
+  hypothesis:'T-test and chi-square statistical tests',
+  medical:'Patient risk scoring and health analysis',
+  archaeology:'Artifact classification and site analytics'
+};
+
+function goPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') === `goPage('${name}')`) n.classList.add('active');
+  });
+  document.getElementById('topbar-title').textContent = pageNames[name];
+  document.getElementById('topbar-sub').textContent = pageSubs[name];
+  // Refresh page content if data loaded
+  if (state.dataset) {
+    if (name === 'descriptive') showDescriptive();
+    if (name === 'correlation') showCorrelation();
+    if (name === 'regression') showRegression();
+    if (name === 'hypothesis') showHypothesis();
+    if (name === 'medical') showMedical();
+    if (name === 'archaeology') showArchaeology();
+  }
+}
+
+// ─── Toast ─────────────────────────────────────────────────────────────────
+function toast(msg, type='success') {
+  const w = document.getElementById('toast-wrap');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  w.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+// ─── Statistics helpers ────────────────────────────────────────────────────
+function mean(arr) { return arr.reduce((a,b)=>a+b,0)/arr.length; }
+function median(arr) { const s=[...arr].sort((a,b)=>a-b); const m=Math.floor(s.length/2); return s.length%2?s[m]:(s[m-1]+s[m])/2; }
+function variance(arr) { const m=mean(arr); return arr.reduce((a,b)=>a+(b-m)**2,0)/(arr.length-1); }
+function stddev(arr) { return Math.sqrt(variance(arr)); }
+function skewness(arr) { const m=mean(arr),s=stddev(arr),n=arr.length; return n/((n-1)*(n-2))*arr.reduce((a,b)=>a+((b-m)/s)**3,0); }
+function pearson(x,y) {
+  const mx=mean(x),my=mean(y);
+  let num=0,dx=0,dy=0;
+  for(let i=0;i<x.length;i++){num+=(x[i]-mx)*(y[i]-my);dx+=(x[i]-mx)**2;dy+=(y[i]-my)**2;}
+  return dx&&dy?num/Math.sqrt(dx*dy):0;
+}
+function linReg(x,y) {
+  const n=x.length,mx=mean(x),my=mean(y);
+  let sxy=0,sxx=0;
+  for(let i=0;i<n;i++){sxy+=(x[i]-mx)*(y[i]-my);sxx+=(x[i]-mx)**2;}
+  const slope=sxy/sxx, intercept=my-slope*mx;
+  const yhat=x.map(v=>slope*v+intercept);
+  const ss_res=y.reduce((a,b,i)=>a+(b-yhat[i])**2,0);
+  const ss_tot=y.reduce((a,b)=>a+(b-mean(y))**2,0);
+  const r2=1-ss_res/ss_tot;
+  return {slope,intercept,r2,yhat};
+}
+function tTest(arr, mu0=0) {
+  const m=mean(arr),s=stddev(arr),n=arr.length;
+  const t=(m-mu0)/(s/Math.sqrt(n));
+  const df=n-1;
+  const pApprox=2*(1-normalCdf(Math.abs(t)));
+  return {t,df,mean:m,stddev:s,p:pApprox};
+}
+function tTest2(a,b) {
+  const ma=mean(a),mb=mean(b),sa=stddev(a),sb=stddev(b),na=a.length,nb=b.length;
+  const t=(ma-mb)/Math.sqrt(sa**2/na+sb**2/nb);
+  const df=Math.floor((sa**2/na+sb**2/nb)**2/((sa**2/na)**2/(na-1)+(sb**2/nb)**2/(nb-1)));
+  const p=2*(1-normalCdf(Math.abs(t)));
+  return {t,df,mean1:ma,mean2:mb,p};
+}
+function normalCdf(z) {
+  const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+  const s=z<0?-1:1; z=Math.abs(z)/Math.sqrt(2);
+  const t=1/(1+p*z);
+  const y=1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-z*z);
+  return 0.5*(1+s*y);
+}
+function chiSquare(arr) {
+  const counts={};
+  arr.forEach(v=>{counts[v]=(counts[v]||0)+1;});
+  const n=arr.length, cats=Object.keys(counts);
+  const expected=n/cats.length;
+  const chi=cats.reduce((a,k)=>a+(counts[k]-expected)**2/expected,0);
+  const df=cats.length-1;
+  return {chi,df,counts,expected};
+}
+function getNumericCol(col) {
+  return state.dataset.map(r=>{const v=parseFloat(r[col]);return isNaN(v)?null:v;}).filter(v=>v!==null);
+}
+function fmt(v,d=3) { return typeof v==='number'?+v.toFixed(d):v; }
+
+// ─── Histogram bins ────────────────────────────────────────────────────────
+function histogram(data, bins=12) {
+  const mn=Math.min(...data),mx=Math.max(...data);
+  const w=(mx-mn)/bins;
+  const edges=Array.from({length:bins},(_,i)=>mn+i*w);
+  const counts=new Array(bins).fill(0);
+  data.forEach(v=>{let b=Math.floor((v-mn)/w);if(b===bins)b=bins-1;counts[b]++;});
+  const labels=edges.map(e=>fmt(e,1));
+  return {labels,counts};
+}
+
+// ─── Sample data generators ────────────────────────────────────────────────
+function generateMedical() {
+  const diagnoses=['E11','I10','J00','I25','K21','E78','M79','J06','N18','I50'];
+  const data=[];
+  for(let i=0;i<100;i++){
+    const age=25+Math.floor(Math.random()*60);
+    const smoker=Math.random()>.7?1:0;
+    const diabetic=Math.random()>.75?1:0;
+    const bmi=18+Math.random()*22;
+    const sbp=100+Math.floor(Math.random()*70)+(age>60?15:0)+(smoker?10:0);
+    const dbp=60+Math.floor(Math.random()*30);
+    const glucose=70+Math.floor(Math.random()*80)+(diabetic?40:0);
+    const chol=150+Math.floor(Math.random()*100);
+    let risk=0;
+    if(age>65)risk+=20;if(bmi>30)risk+=15;if(sbp>140)risk+=20;if(glucose>126)risk+=20;if(smoker)risk+=15;if(diabetic)risk+=10;
+    risk=Math.min(risk,100);
+    const level=risk>=75?'critical':risk>=50?'high':risk>=25?'medium':'low';
+    data.push({patient_id:'P'+String(i+1).padStart(3,'0'),age,gender:Math.random()>.5?'M':'F',diagnosis:diagnoses[Math.floor(Math.random()*diagnoses.length)],systolic_bp:sbp,diastolic_bp:dbp,glucose,bmi:+bmi.toFixed(1),cholesterol:chol,smoker,diabetic,risk_score:risk,risk_level:level});
+  }
+  return data;
+}
+function generateArchaeology() {
+  const sites=['Tell Abyad','Jericho East','Petra North','Luxor Site B','Ephesus Grid 3','Pompeii Block 7'];
+  const categories=['ceramic','lithic','bone','coin','jewelry','glass','textile','metal'];
+  const periods=['Neolithic','Bronze Age','Iron Age','Classical','Hellenistic','Roman','Byzantine'];
+  const materials=['clay','flint','bone','copper','gold','glass','linen','iron'];
+  const data=[];
+  for(let i=0;i<80;i++){
+    const cat=categories[Math.floor(Math.random()*categories.length)];
+    const per=periods[Math.floor(Math.random()*periods.length)];
+    const mat=materials[Math.floor(Math.random()*materials.length)];
+    const len=1+Math.random()*40;
+    const wt=5+Math.random()*500;
+    const depth=0.2+Math.random()*3;
+    let cls='Unclassified';
+    if(mat==='gold'||mat==='copper')cls='Metalwork';
+    else if(cat==='coin')cls='Currency/Numismatics';
+    else if(cat==='ceramic')cls='Ceramic Vessel';
+    else if(cat==='lithic')cls='Lithic Tool';
+    else if(cat==='bone')cls='Organic Remains';
+    data.push({artifact_id:'A'+String(i+1).padStart(3,'0'),site:sites[Math.floor(Math.random()*sites.length)],year:2018+Math.floor(Math.random()*7),category:cat,material:mat,period:per,length_cm:+len.toFixed(1),weight_g:+wt.toFixed(1),depth_m:+depth.toFixed(2),condition:['excellent','good','fair','poor'][Math.floor(Math.random()*4)],classification:cls});
+  }
+  return data;
+}
+
+// ─── Load data ─────────────────────────────────────────────────────────────
+function loadSampleData(type) {
+  const data = type==='medical' ? generateMedical() : generateArchaeology();
+  state.dataset = data;
+  state.columns = Object.keys(data[0]);
+  state.numericCols = state.columns.filter(c=>typeof data[0][c]==='number');
+  state.categoricCols = state.columns.filter(c=>typeof data[0][c]==='string');
+  state.moduleType = type;
+  document.getElementById('dataset-count').textContent = '1';
+  updateModuleIndicator();
+  updateDashboard();
+  toast(`${type==='medical'?'Medical patient':'Archaeology artifact'} dataset loaded (${data.length} records)`, 'success');
+  goPage('dashboard');
+  updateDatasetsList();
+}
+
+function updateModuleIndicator() {
+  const ind = document.getElementById('module-indicator');
+  const colors = {medical:'#34d399',archaeology:'#fbbf24',general:'#4f8ef7'};
+  const labels = {medical:'Medical module active',archaeology:'Archaeology module active',general:'General dataset'};
+  ind.innerHTML = `<div class="module-dot" style="background:${colors[state.moduleType]}"></div><span style="font-size:12px;color:var(--text2)">${labels[state.moduleType]}</span>`;
+}
+
+function updateDatasetsList() {
+  if (!state.dataset) return;
+  const list = document.getElementById('datasets-list');
+  list.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg)">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:36px;height:36px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">${state.moduleType==='medical'?'🏥':'⚱️'}</div>
+      <div>
+        <div style="font-size:14px;font-weight:500;color:var(--text)">${state.moduleType==='medical'?'Medical Patient Dataset':'Archaeology Artifacts'}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px">${state.dataset.length} rows · ${state.columns.length} columns · ${state.numericCols.length} numeric variables</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="badge ${state.moduleType==='medical'?'badge-green':'badge-amber'}">${state.moduleType}</span>
+      <button class="btn btn-primary btn-sm" onclick="goPage('dashboard')">Analyze →</button>
+    </div>
+  </div>`;
+}
+
+// ─── Dashboard ─────────────────────────────────────────────────────────────
+function updateDashboard() {
+  const d = state.dataset;
+  if (!d) return;
+  const nulls = d.reduce((a,r)=>a+state.columns.filter(c=>r[c]===null||r[c]===undefined||r[c]==='').length,0);
+  const total = d.length * state.columns.length;
+  const quality = Math.round((1-nulls/total)*100);
+
+  document.getElementById('s-rows').textContent = d.length;
+  document.getElementById('s-cols').textContent = state.columns.length;
+  document.getElementById('s-type').textContent = state.moduleType.charAt(0).toUpperCase()+state.moduleType.slice(1);
+  document.getElementById('s-quality').textContent = quality;
+  document.getElementById('dash-dataset-info').textContent = `${d.length} records · ${state.columns.length} variables · ${state.numericCols.length} numeric · Module: ${state.moduleType}`;
+
+  // Summary table
+  const body = document.getElementById('dash-summary-body');
+  body.innerHTML = state.numericCols.slice(0,6).map(c=>{
+    const vals=getNumericCol(c);
+    return `<tr><td>${c}</td><td>${fmt(mean(vals),2)}</td><td>${fmt(stddev(vals),2)}</td><td>${fmt(Math.min(...vals),1)}</td><td>${fmt(Math.max(...vals),1)}</td></tr>`;
+  }).join('');
+
+  // Histogram of first numeric
+  if (state.numericCols.length) {
+    const col = state.numericCols[0];
+    const vals = getNumericCol(col);
+    const {labels,counts} = histogram(vals);
+    mkChart('chart-hist', {
+      type:'bar',
+      data:{labels,datasets:[{label:col,data:counts,backgroundColor:'rgba(79,142,247,0.5)',borderColor:'#4f8ef7',borderWidth:1,borderRadius:3}]},
+      options:{...chartDefaults,plugins:{...chartDefaults.plugins,legend:{display:false}},scales:{...chartDefaults.scales}}
+    });
+  }
+
+  // Preview table
+  const head = document.getElementById('preview-head');
+  const pbody = document.getElementById('preview-body');
+  head.innerHTML = '<tr>'+state.columns.map(c=>`<th>${c}</th>`).join('')+'</tr>';
+  pbody.innerHTML = d.slice(0,8).map(r=>'<tr>'+state.columns.map(c=>`<td>${r[c]}</td>`).join('')+'</tr>').join('');
+
+  generateInsights();
+}
+
+function generateInsights() {
+  if (!state.dataset) return;
+  const container = document.getElementById('insights-container');
+  const insights = [];
+
+  if (state.numericCols.length >= 2) {
+    const c1=state.numericCols[0], c2=state.numericCols[1];
+    const r=pearson(getNumericCol(c1),getNumericCol(c2));
+    const strength=Math.abs(r)>.7?'strong':Math.abs(r)>.4?'moderate':'weak';
+    const dir=r>0?'positive':'negative';
+    insights.push({type:Math.abs(r)>.5?'blue':'green',title:`Correlation: ${c1} & ${c2}`,body:`There is a ${strength} ${dir} correlation (r = ${fmt(r,3)}) between ${c1} and ${c2}.`});
+  }
+
+  if (state.moduleType==='medical') {
+    const riskCol=state.numericCols.find(c=>c.includes('risk'));
+    if (riskCol) {
+      const vals=getNumericCol(riskCol);
+      const high=vals.filter(v=>v>=50).length;
+      const pct=Math.round(high/vals.length*100);
+      insights.push({type:pct>30?'red':'amber',title:'High-Risk Patients',body:`${pct}% of patients (${high}/${vals.length}) have a risk score ≥ 50, indicating elevated health risk.`});
+    }
+    const ageCol=state.numericCols.find(c=>c.includes('age'));
+    if (ageCol) {
+      const ages=getNumericCol(ageCol);
+      insights.push({type:'green',title:'Population Age',body:`Mean patient age is ${fmt(mean(ages),1)} years (range: ${Math.min(...ages)}–${Math.max(...ages)}). Distribution skewness: ${fmt(skewness(ages),2)}.`});
+    }
+  }
+
+  if (state.moduleType==='archaeology') {
+    const catCol=state.categoricCols.find(c=>c.includes('categor'));
+    if (catCol) {
+      const cats={};
+      state.dataset.forEach(r=>{cats[r[catCol]]=(cats[r[catCol]]||0)+1;});
+      const top=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
+      insights.push({type:'amber',title:'Most Common Artifact',body:`"${top[0]}" is the most frequent artifact category with ${top[1]} specimens (${Math.round(top[1]/state.dataset.length*100)}% of total).`});
+    }
+    const depthCol=state.numericCols.find(c=>c.includes('depth'));
+    if (depthCol) {
+      const depths=getNumericCol(depthCol);
+      insights.push({type:'blue',title:'Excavation Depth',body:`Artifacts found at average depth of ${fmt(mean(depths),2)}m (±${fmt(stddev(depths),2)}m), suggesting stratified deposition layers.`});
+    }
+  }
+
+  if (insights.length===0) {
+    const col=state.numericCols[0];
+    const vals=getNumericCol(col);
+    insights.push({type:'blue',title:`Distribution of ${col}`,body:`Mean: ${fmt(mean(vals),2)}, Std Dev: ${fmt(stddev(vals),2)}. The data spans from ${fmt(Math.min(...vals),1)} to ${fmt(Math.max(...vals),1)}.`});
+  }
+
+  container.innerHTML = insights.map(i=>`<div class="insight ${i.type}"><div class="insight-title">${i.title}</div><div class="insight-body">${i.body}</div></div>`).join('');
+}
+
+// ─── Descriptive Stats ─────────────────────────────────────────────────────
+function showDescriptive() {
+  const nc = document.getElementById('desc-no-data');
+  const co = document.getElementById('desc-content');
+  if (!state.dataset || !state.numericCols.length) { nc.style.display='block'; co.style.display='none'; return; }
+  nc.style.display='none'; co.style.display='block';
+
+  // Populate selects
+  const sel = document.getElementById('desc-var-select');
+  sel.innerHTML = state.numericCols.map(c=>`<option value="${c}">${c}</option>`).join('');
+
+  // Overview cards
+  const ovr = document.getElementById('desc-overview');
+  const allVals = state.numericCols.flatMap(c=>getNumericCol(c));
+  ovr.innerHTML = `
+    <div class="stat-card"><div class="stat-label">Variables</div><div class="stat-val">${state.numericCols.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Total Obs</div><div class="stat-val">${state.dataset.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Grand Mean</div><div class="stat-val" style="font-size:18px">${fmt(mean(allVals),2)}</div></div>
+    <div class="stat-card"><div class="stat-label">Overall StdDev</div><div class="stat-val" style="font-size:18px">${fmt(stddev(allVals),2)}</div></div>`;
+
+  // All variables table
+  const tbody = document.getElementById('desc-all-body');
+  tbody.innerHTML = state.numericCols.map(c=>{
+    const v=getNumericCol(c);
+    return `<tr><td>${c}</td><td>${v.length}</td><td>${fmt(mean(v),3)}</td><td>${fmt(median(v),3)}</td><td>${fmt(stddev(v),3)}</td><td>${fmt(variance(v),3)}</td><td>${fmt(Math.min(...v),2)}</td><td>${fmt(Math.max(...v),2)}</td><td>${fmt(skewness(v),3)}</td></tr>`;
+  }).join('');
+
+  updateDescChart();
+}
+function updateDescChart() {
+  const col = document.getElementById('desc-var-select').value;
+  if (!col) return;
+  const vals = getNumericCol(col);
+  const {labels,counts} = histogram(vals);
+  mkChart('chart-desc',{
+    type:'bar',
+    data:{labels,datasets:[{label:col,data:counts,backgroundColor:'rgba(79,142,247,0.5)',borderColor:'#4f8ef7',borderWidth:1,borderRadius:3}]},
+    options:{...chartDefaults,plugins:{...chartDefaults.plugins,legend:{display:false}}}
+  });
+  const tbody = document.getElementById('desc-stats-body');
+  const v=vals;
+  tbody.innerHTML=[
+    ['N',v.length],['Mean',fmt(mean(v),4)],['Median',fmt(median(v),4)],
+    ['Std Deviation',fmt(stddev(v),4)],['Variance',fmt(variance(v),4)],
+    ['Min',fmt(Math.min(...v),4)],['Max',fmt(Math.max(...v),4)],
+    ['Range',fmt(Math.max(...v)-Math.min(...v),4)],['Skewness',fmt(skewness(v),4)]
+  ].map(([k,val])=>`<tr><td>${k}</td><td style="font-family:var(--font-mono)">${val}</td></tr>`).join('');
+}
+
+// ─── Correlation ───────────────────────────────────────────────────────────
+function showCorrelation() {
+  const nc = document.getElementById('corr-no-data');
+  const co = document.getElementById('corr-content');
+  const cols = state.numericCols.slice(0,7);
+  if (!state.dataset || cols.length < 2) { nc.style.display='block'; co.style.display='none'; return; }
+  nc.style.display='none'; co.style.display='block';
+
+  // Build matrix
+  const matrix = cols.map(c1=>cols.map(c2=>pearson(getNumericCol(c1),getNumericCol(c2))));
+  const div = document.getElementById('corr-matrix');
+  let html='<div style="display:flex;flex-direction:column;gap:2px">';
+  html+=`<div style="display:flex;gap:2px;margin-bottom:2px"><div style="width:80px"></div>${cols.map(c=>`<div style="width:44px;font-size:9px;color:var(--text3);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.slice(0,6)}</div>`).join('')}</div>`;
+  matrix.forEach((row,i)=>{
+    html+=`<div style="display:flex;gap:2px;align-items:center"><div style="width:80px;font-size:9px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${cols[i].slice(0,10)}</div>`;
+    row.forEach((r,j)=>{
+      const abs=Math.abs(r);
+      const bg=i===j?'rgba(255,255,255,0.05)':r>0?`rgba(79,142,247,${abs*.7})`:`rgba(248,113,113,${abs*.7})`;
+      const tc=abs>.5?'#fff':'var(--text3)';
+      html+=`<div class="corr-cell tooltip-wrap" style="background:${bg};color:${tc}"><span>${fmt(r,2)}</span><div class="tooltip">${cols[i]} × ${cols[j]}: r=${fmt(r,4)}</div></div>`;
+    });
+    html+='</div>';
+  });
+  html+='</div>';
+  div.innerHTML=html;
+
+  // Populate selects
+  ['corr-x','corr-y'].forEach((id,idx)=>{
+    const sel=document.getElementById(id);
+    sel.innerHTML=cols.map(c=>`<option value="${c}">${c}</option>`).join('');
+    sel.selectedIndex=idx;
+  });
+  updateScatter();
+
+  // Significant correlations table
+  const tbody=document.getElementById('corr-body');
+  const pairs=[];
+  for(let i=0;i<cols.length;i++) for(let j=i+1;j<cols.length;j++){
+    const r=matrix[i][j];
+    const abs=Math.abs(r);
+    if(abs>.2) pairs.push({c1:cols[i],c2:cols[j],r,abs});
+  }
+  pairs.sort((a,b)=>b.abs-a.abs);
+  tbody.innerHTML=pairs.slice(0,10).map(p=>{
+    const s=p.abs>.7?'Strong':p.abs>.4?'Moderate':'Weak';
+    const sc=p.abs>.7?'badge-blue':p.abs>.4?'badge-purple':'badge-gray';
+    const dir=p.r>0?'<span style="color:var(--green)">Positive</span>':'<span style="color:var(--red)">Negative</span>';
+    return `<tr><td>${p.c1}</td><td>${p.c2}</td><td style="font-family:var(--font-mono)">${fmt(p.r,4)}</td><td><span class="badge ${sc}">${s}</span></td><td>${dir}</td></tr>`;
+  }).join('');
+}
+function updateScatter() {
+  const cx=document.getElementById('corr-x').value;
+  const cy=document.getElementById('corr-y').value;
+  if(!cx||!cy) return;
+  const xv=getNumericCol(cx), yv=getNumericCol(cy);
+  const pts=xv.map((x,i)=>({x,y:yv[i]}));
+  const r=pearson(xv,yv);
+  document.getElementById('corr-value').textContent=`r = ${fmt(r,4)} (${Math.abs(r)>.7?'Strong':Math.abs(r)>.4?'Moderate':'Weak'} ${r>0?'positive':'negative'} correlation)`;
+  mkChart('chart-scatter',{
+    type:'scatter',
+    data:{datasets:[{label:`${cx} vs ${cy}`,data:pts,backgroundColor:'rgba(79,142,247,0.5)',borderColor:'rgba(79,142,247,0.8)',pointRadius:4,pointHoverRadius:6}]},
+    options:{...chartDefaults,scales:{x:{...chartDefaults.scales.x,title:{display:true,text:cx,color:'var(--text3)',font:{size:11}}},y:{...chartDefaults.scales.y,title:{display:true,text:cy,color:'var(--text3)',font:{size:11}}}}}
+  });
+}
+
+// ─── Regression ────────────────────────────────────────────────────────────
+function showRegression() {
+  const nc=document.getElementById('reg-no-data');
+  const co=document.getElementById('reg-content');
+  if(!state.dataset||state.numericCols.length<2){nc.style.display='block';co.style.display='none';return;}
+  nc.style.display='none';co.style.display='block';
+  ['reg-y','reg-x'].forEach((id,i)=>{
+    const s=document.getElementById(id);
+    s.innerHTML=state.numericCols.map(c=>`<option value="${c}">${c}</option>`).join('');
+    s.selectedIndex=i;
+  });
+}
+function runRegression() {
+  const ycol=document.getElementById('reg-y').value;
+  const xcol=document.getElementById('reg-x').value;
+  const xv=getNumericCol(xcol), yv=getNumericCol(ycol);
+  const {slope,intercept,r2,yhat}=linReg(xv,yv);
+
+  document.getElementById('reg-results').style.display='block';
+  document.getElementById('reg-stats-grid').innerHTML=`
+    <div class="stat-card"><div class="stat-label">R²</div><div class="stat-val">${fmt(r2,4)}</div><div class="stat-change">Coefficient of determination</div></div>
+    <div class="stat-card"><div class="stat-label">Slope</div><div class="stat-val">${fmt(slope,4)}</div><div class="stat-change">β coefficient</div></div>
+    <div class="stat-card"><div class="stat-label">Intercept</div><div class="stat-val">${fmt(intercept,4)}</div><div class="stat-change">α constant</div></div>
+    <div class="stat-card"><div class="stat-label">Pearson r</div><div class="stat-val">${fmt(Math.sqrt(r2)*(slope>0?1:-1),4)}</div><div class="stat-change">Correlation coefficient</div></div>`;
+
+  document.getElementById('reg-model-body').innerHTML=[
+    ['Equation',`${ycol} = ${fmt(slope,4)} × ${xcol} + ${fmt(intercept,4)}`],
+    ['R²',fmt(r2,4)],['Adjusted R²',fmt(r2-(1-r2)/(xv.length-2),4)],
+    ['Std Error',fmt(Math.sqrt(yv.reduce((a,b,i)=>a+(b-yhat[i])**2,0)/(xv.length-2)),4)],
+    ['N',xv.length]
+  ].map(([k,v])=>`<tr><td>${k}</td><td style="font-family:var(--font-mono);font-size:11px">${v}</td></tr>`).join('');
+
+  const ins=document.getElementById('reg-insight');
+  ins.style.display='block';
+  const quality=r2>.7?'strong':r2>.4?'moderate':'weak';
+  ins.className=`insight ${r2>.7?'green':r2>.4?'blue':'amber'}`;
+  ins.innerHTML=`<div class="insight-title">Model Interpretation</div><div class="insight-body">The model shows a ${quality} fit (R² = ${fmt(r2,3)}). For every 1 unit increase in ${xcol}, ${ycol} ${slope>0?'increases':'decreases'} by ${Math.abs(fmt(slope,3))} units.</div>`;
+
+  const xSorted=[...xv].sort((a,b)=>a-b);
+  const linePts=xSorted.map(x=>({x,y:slope*x+intercept}));
+  mkChart('chart-reg',{
+    type:'scatter',
+    data:{datasets:[
+      {label:'Data points',data:xv.map((x,i)=>({x,y:yv[i]})),backgroundColor:'rgba(79,142,247,0.4)',borderColor:'rgba(79,142,247,0.7)',pointRadius:4},
+      {type:'line',label:'Regression line',data:linePts,borderColor:'#f87171',borderWidth:2,pointRadius:0,fill:false}
+    ]},
+    options:{...chartDefaults}
+  });
+}
+
+// ─── Hypothesis ────────────────────────────────────────────────────────────
+function showHypothesis() {
+  const nc=document.getElementById('hyp-no-data');
+  const co=document.getElementById('hyp-content');
+  if(!state.dataset){nc.style.display='block';co.style.display='none';return;}
+  nc.style.display='none';co.style.display='block';
+  ['ttest-var','ttest2-v1','ttest2-v2'].forEach(id=>{
+    const s=document.getElementById(id);
+    s.innerHTML=state.numericCols.map(c=>`<option value="${c}">${c}</option>`).join('');
+  });
+  const cs=document.getElementById('chi-var');
+  cs.innerHTML=state.categoricCols.map(c=>`<option value="${c}">${c}</option>`).join('');
+}
+function switchHypTab(name,el) {
+  ['ttest','ttest2','chi'].forEach(t=>document.getElementById('hyp-'+t).style.display='none');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('hyp-'+name).style.display='block';
+  el.classList.add('active');
+}
+function runTtest() {
+  const col=document.getElementById('ttest-var').value;
+  const mu=parseFloat(document.getElementById('ttest-mu').value)||0;
+  const {t,df,mean:m,stddev:s,p}=tTest(getNumericCol(col),mu);
+  const sig=p<0.05;
+  document.getElementById('ttest-output').innerHTML=`
+    <table class="data-table"><tbody>
+      <tr><td>t-statistic</td><td style="font-family:var(--font-mono)">${fmt(t,4)}</td></tr>
+      <tr><td>Degrees of freedom</td><td style="font-family:var(--font-mono)">${df}</td></tr>
+      <tr><td>p-value (two-tailed)</td><td style="font-family:var(--font-mono)">${fmt(p,4)}</td></tr>
+      <tr><td>Sample mean</td><td style="font-family:var(--font-mono)">${fmt(m,4)}</td></tr>
+      <tr><td>Std deviation</td><td style="font-family:var(--font-mono)">${fmt(s,4)}</td></tr>
+    </tbody></table>
+    <div class="insight ${sig?'red':'green'}" style="margin-top:12px">
+      <div class="insight-title">${sig?'Reject H₀':'Fail to Reject H₀'} (α = 0.05)</div>
+      <div class="insight-body">The mean of ${col} (${fmt(m,2)}) is ${sig?'significantly':'not significantly'} different from μ₀ = ${mu}. p = ${fmt(p,4)}.</div>
+    </div>`;
+}
+function runTtest2() {
+  const c1=document.getElementById('ttest2-v1').value;
+  const c2=document.getElementById('ttest2-v2').value;
+  const {t,df,mean1,mean2,p}=tTest2(getNumericCol(c1),getNumericCol(c2));
+  const sig=p<0.05;
+  document.getElementById('ttest2-output').innerHTML=`
+    <table class="data-table"><tbody>
+      <tr><td>t-statistic</td><td style="font-family:var(--font-mono)">${fmt(t,4)}</td></tr>
+      <tr><td>Degrees of freedom</td><td style="font-family:var(--font-mono)">${df}</td></tr>
+      <tr><td>p-value (two-tailed)</td><td style="font-family:var(--font-mono)">${fmt(p,4)}</td></tr>
+      <tr><td>Mean of ${c1}</td><td style="font-family:var(--font-mono)">${fmt(mean1,4)}</td></tr>
+      <tr><td>Mean of ${c2}</td><td style="font-family:var(--font-mono)">${fmt(mean2,4)}</td></tr>
+    </tbody></table>
+    <div class="insight ${sig?'red':'green'}" style="margin-top:12px">
+      <div class="insight-title">${sig?'Significant difference':'No significant difference'}</div>
+      <div class="insight-body">The means of ${c1} and ${c2} are ${sig?'significantly':'not significantly'} different (p = ${fmt(p,4)}).</div>
+    </div>`;
+}
+function runChiSquare() {
+  const col=document.getElementById('chi-var').value;
+  const cats=state.dataset.map(r=>r[col]).filter(v=>v!==null&&v!=='');
+  const {chi,df,counts,expected}=chiSquare(cats);
+  const sig=chi>df*2.5;
+  let rows=Object.entries(counts).map(([k,v])=>`<tr><td>${k}</td><td>${v}</td><td>${fmt(expected,1)}</td><td>${fmt((v-expected)**2/expected,4)}</td></tr>`).join('');
+  document.getElementById('chi-output').innerHTML=`
+    <table class="data-table" style="margin-bottom:12px"><thead><tr><th>Category</th><th>Observed</th><th>Expected</th><th>(O-E)²/E</th></tr></thead><tbody>${rows}</tbody></table>
+    <table class="data-table" style="margin-bottom:12px"><tbody>
+      <tr><td>χ² statistic</td><td style="font-family:var(--font-mono)">${fmt(chi,4)}</td></tr>
+      <tr><td>Degrees of freedom</td><td style="font-family:var(--font-mono)">${df}</td></tr>
+    </tbody></table>
+    <div class="insight ${sig?'red':'green'}">
+      <div class="insight-title">${sig?'Distribution is non-uniform':'Distribution appears uniform'}</div>
+      <div class="insight-body">χ²(${df}) = ${fmt(chi,3)}. The categories in ${col} are ${sig?'not':'approximately'} uniformly distributed.</div>
+    </div>`;
+}
+
+// ─── Medical module ────────────────────────────────────────────────────────
+function showMedical() {
+  const nc=document.getElementById('med-no-data');
+  const co=document.getElementById('med-content');
+  if(!state.dataset||state.moduleType!=='medical'){nc.style.display='block';co.style.display='none';return;}
+  nc.style.display='none';co.style.display='block';
+
+  const d=state.dataset;
+  const risks=d.map(r=>r.risk_score);
+  const low=d.filter(r=>r.risk_level==='low').length;
+  const med=d.filter(r=>r.risk_level==='medium').length;
+  const high=d.filter(r=>r.risk_level==='high').length;
+  const crit=d.filter(r=>r.risk_level==='critical').length;
+
+  document.getElementById('med-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Patients</div><div class="stat-val">${d.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Mean Risk Score</div><div class="stat-val">${fmt(mean(risks),1)}</div></div>
+    <div class="stat-card"><div class="stat-label">High/Critical</div><div class="stat-val">${high+crit}<span>pts</span></div></div>
+    <div class="stat-card"><div class="stat-label">Mean Age</div><div class="stat-val">${fmt(mean(d.map(r=>r.age)),1)}</div></div>`;
+
+  document.getElementById('risk-summary').innerHTML=`
+    <div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px"><span>Low risk</span><span>${low} pts</span></div><div class="risk-bar"><div class="risk-fill" style="width:${low/d.length*100}%;background:var(--green)"></div></div></div>
+    <div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px"><span>Medium risk</span><span>${med} pts</span></div><div class="risk-bar"><div class="risk-fill" style="width:${med/d.length*100}%;background:var(--amber)"></div></div></div>
+    <div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px"><span>High risk</span><span>${high} pts</span></div><div class="risk-bar"><div class="risk-fill" style="width:${high/d.length*100}%;background:#fb923c"></div></div></div>
+    <div><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px"><span>Critical</span><span>${crit} pts</span></div><div class="risk-bar"><div class="risk-fill" style="width:${crit/d.length*100}%;background:var(--red)"></div></div></div>`;
+
+  mkChart('chart-med-risk',{
+    type:'bar',
+    data:{labels:['Low (0-24)','Medium (25-49)','High (50-74)','Critical (75+)'],
+      datasets:[{data:[low,med,high,crit],backgroundColor:['rgba(52,211,153,.6)','rgba(251,191,36,.6)','rgba(251,146,60,.6)','rgba(248,113,113,.6)'],borderColor:['#34d399','#fbbf24','#fb923c','#f87171'],borderWidth:1,borderRadius:4}]},
+    options:{...chartDefaults,plugins:{...chartDefaults.plugins,legend:{display:false}}}
+  });
+
+  const ages=d.map(r=>r.age);
+  const {labels:al,counts:ac}=histogram(ages,8);
+  mkChart('chart-med-age',{
+    type:'bar',
+    data:{labels:al,datasets:[{label:'Patients',data:ac,backgroundColor:'rgba(167,139,250,.5)',borderColor:'#a78bfa',borderWidth:1,borderRadius:3}]},
+    options:{...chartDefaults,plugins:{...chartDefaults.plugins,legend:{display:false}}}
+  });
+
+  const tbody=document.getElementById('med-patients-body');
+  tbody.innerHTML=d.slice(0,15).map(r=>{
+    const bc=r.risk_level==='critical'?'badge-red':r.risk_level==='high'?'badge-red':r.risk_level==='medium'?'badge-amber':'badge-green';
+    return `<tr><td>${r.patient_id}</td><td>${r.age}</td><td>${r.diagnosis}</td><td style="font-family:var(--font-mono)">${r.risk_score}</td><td><span class="badge ${bc}">${r.risk_level}</span></td></tr>`;
+  }).join('');
+}
+
+// ─── Archaeology module ────────────────────────────────────────────────────
+function showArchaeology() {
+  const nc=document.getElementById('arch-no-data');
+  const co=document.getElementById('arch-content');
+  if(!state.dataset||state.moduleType!=='archaeology'){nc.style.display='block';co.style.display='none';return;}
+  nc.style.display='none';co.style.display='block';
+
+  const d=state.dataset;
+  const sites={}, cats={}, periods={};
+  d.forEach(r=>{
+    sites[r.site]=(sites[r.site]||0)+1;
+    cats[r.category]=(cats[r.category]||0)+1;
+    periods[r.period]=(periods[r.period]||0)+1;
+  });
+
+  document.getElementById('arch-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Artifacts</div><div class="stat-val">${d.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Sites</div><div class="stat-val">${Object.keys(sites).length}</div></div>
+    <div class="stat-card"><div class="stat-label">Categories</div><div class="stat-val">${Object.keys(cats).length}</div></div>
+    <div class="stat-card"><div class="stat-label">Periods</div><div class="stat-val">${Object.keys(periods).length}</div></div>`;
+
+  const catKeys=Object.keys(cats), catVals=Object.values(cats);
+  mkChart('chart-arch-cat',{
+    type:'doughnut',
+    data:{labels:catKeys,datasets:[{data:catVals,backgroundColor:CHART_COLORS.map(c=>c+'99'),borderColor:CHART_COLORS,borderWidth:1}]},
+    options:{...chartDefaults,scales:{},plugins:{...chartDefaults.plugins,legend:{...chartDefaults.plugins.legend,position:'right'}}}
+  });
+
+  const siteKeys=Object.keys(sites), siteVals=Object.values(sites);
+  mkChart('chart-arch-site',{
+    type:'bar',
+    data:{labels:siteKeys,datasets:[{label:'Artifacts',data:siteVals,backgroundColor:'rgba(251,191,36,.5)',borderColor:'#fbbf24',borderWidth:1,borderRadius:3}]},
+    options:{...chartDefaults,plugins:{...chartDefaults.plugins,legend:{display:false}},scales:{...chartDefaults.scales,x:{...chartDefaults.scales.x,ticks:{...chartDefaults.scales.x.ticks,maxRotation:30}}}}
+  });
+
+  const perKeys=Object.keys(periods), perVals=Object.values(periods);
+  mkChart('chart-arch-period',{
+    type:'line',
+    data:{labels:perKeys,datasets:[{label:'Count',data:perVals,borderColor:'#a78bfa',backgroundColor:'rgba(167,139,250,.15)',borderWidth:2,tension:.4,fill:true,pointBackgroundColor:'#a78bfa',pointRadius:4}]},
+    options:{...chartDefaults,plugins:{...chartDefaults.plugins,legend:{display:false}}}
+  });
+
+  const tbody=document.getElementById('arch-body');
+  tbody.innerHTML=d.slice(0,15).map(r=>`<tr><td>${r.artifact_id}</td><td>${r.category}</td><td>${r.site}</td><td>${r.period}</td><td style="font-size:11px;color:var(--text3)">${r.classification}</td></tr>`).join('');
+}
+
+// ─── Manual entry grid ─────────────────────────────────────────────────────
+function buildGrid() {
+  const rows=parseInt(document.getElementById('grid-rows').value)||8;
+  const cols=parseInt(document.getElementById('grid-cols').value)||5;
+  let html=`<table class="editable-grid"><thead><tr>`;
+  for(let c=0;c<cols;c++) html+=`<th><input type="text" value="Variable_${c+1}" style="background:transparent;border:none;color:var(--text3);font-size:11px;font-family:var(--font-mono);padding:8px 10px;width:100%;outline:none"></th>`;
+  html+=`</tr></thead><tbody>`;
+  for(let r=0;r<rows;r++){
+    html+=`<tr>`;
+    for(let c=0;c<cols;c++) html+=`<td><input type="text" placeholder="—" id="cell-${r}-${c}"></td>`;
+    html+=`</tr>`;
+  }
+  html+=`</tbody></table>`;
+  document.getElementById('grid-container').innerHTML=html;
+}
+function importManualData() {
+  const table=document.querySelector('.editable-grid');
+  if(!table){toast('Build the grid first','error');return;}
+  const headers=[...table.querySelectorAll('thead th input')].map(i=>i.value||`Col${Math.random()}`);
+  const rows=[...table.querySelectorAll('tbody tr')];
+  const data=rows.map(row=>{
+    const cells=[...row.querySelectorAll('td input')];
+    const obj={};
+    cells.forEach((c,i)=>{const v=c.value.trim();obj[headers[i]]=isNaN(v)||v===''?v:parseFloat(v);});
+    return obj;
+  }).filter(r=>Object.values(r).some(v=>v!==''&&v!==null));
+  if(!data.length){toast('No data entered','error');return;}
+  state.dataset=data;
+  state.columns=headers;
+  state.numericCols=headers.filter(h=>data.some(r=>typeof r[h]==='number'&&!isNaN(r[h])));
+  state.categoricCols=headers.filter(h=>!state.numericCols.includes(h));
+  state.moduleType='general';
+  document.getElementById('dataset-count').textContent='1';
+  updateModuleIndicator();
+  updateDashboard();
+  toast(`Imported ${data.length} rows from manual entry`,'success');
+  goPage('dashboard');
+}
+
+// ─── File upload (simulated) ───────────────────────────────────────────────
+function handleDragOver(e){e.preventDefault();document.getElementById('drop-zone').classList.add('dragover');}
+function handleDragLeave(){document.getElementById('drop-zone').classList.remove('dragover');}
+function handleDrop(e){e.preventDefault();handleDragLeave();const f=e.dataTransfer.files[0];if(f)processFile(f);}
+function handleFileSelect(e){const f=e.target.files[0];if(f)processFile(f);}
+function processFile(file) {
+  const ext=file.name.split('.').pop().toLowerCase();
+  if(!['csv','xlsx','tsv'].includes(ext)){toast('Unsupported file type. Use .csv, .xlsx or .tsv','error');return;}
+  const status=document.getElementById('upload-status');
+  status.innerHTML=`<div class="insight blue"><div class="insight-title">Processing ${file.name}</div><div class="insight-body">In a production environment with PHP backend, this file would be parsed server-side using PhpSpreadsheet (xlsx) or League\\CSV (csv). For this demo, loading a sample dataset instead.</div></div>`;
+  setTimeout(()=>{
+    const type=file.name.toLowerCase().includes('med')?'medical':'archaeology';
+    loadSampleData(type);
+    status.innerHTML='';
+  },1500);
+}
+
+// ─── Init ──────────────────────────────────────────────────────────────────
+buildGrid();
+// Auto-load medical sample on start for best first experience
+setTimeout(()=>loadSampleData('medical'),200);
+</script>
+</body>
+</html>
