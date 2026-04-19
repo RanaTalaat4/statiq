@@ -1,0 +1,2093 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StatIQ — Professional Statistical Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS — DUAL THEME
+═══════════════════════════════════════════ */
+:root {
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'IBM Plex Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.12), 0 1px 2px rgba(0,0,0,.08);
+  --shadow: 0 4px 16px rgba(0,0,0,.15), 0 2px 4px rgba(0,0,0,.1);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,.25), 0 4px 12px rgba(0,0,0,.15);
+}
+
+[data-theme="dark"] {
+  --bg-base:    #0d0f14;
+  --bg-surface: #13161e;
+  --bg-raised:  #1a1e28;
+  --bg-overlay: #21263300;
+  --bg-hover:   rgba(255,255,255,0.04);
+  --bg-active:  rgba(255,255,255,0.08);
+  --border:     rgba(255,255,255,0.07);
+  --border-md:  rgba(255,255,255,0.12);
+  --border-hi:  rgba(255,255,255,0.22);
+  --text-hi:    #eef0f7;
+  --text-body:  #9ba3b8;
+  --text-muted: #4e5568;
+  --text-dim:   #2d3245;
+  --accent:     #4d85ff;
+  --accent-dim: rgba(77,133,255,0.12);
+  --accent-glow:rgba(77,133,255,0.25);
+  --green:      #22c97e;
+  --green-dim:  rgba(34,201,126,0.1);
+  --amber:      #f0b429;
+  --amber-dim:  rgba(240,180,41,0.1);
+  --red:        #f0614c;
+  --red-dim:    rgba(240,97,76,0.1);
+  --purple:     #9d7cf0;
+  --purple-dim: rgba(157,124,240,0.1);
+  --cyan:       #19c5e4;
+  --cyan-dim:   rgba(25,197,228,0.08);
+  --medical:    #22c97e;
+  --arch:       #f0b429;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.3);
+  --shadow: 0 4px 16px rgba(0,0,0,.5), 0 2px 4px rgba(0,0,0,.3);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,.7), 0 4px 12px rgba(0,0,0,.4);
+}
+
+[data-theme="light"] {
+  --bg-base:    #f4f5f9;
+  --bg-surface: #ffffff;
+  --bg-raised:  #f9fafb;
+  --bg-overlay: rgba(255,255,255,0.96);
+  --bg-hover:   rgba(0,0,0,0.03);
+  --bg-active:  rgba(77,133,255,0.06);
+  --border:     rgba(0,0,0,0.07);
+  --border-md:  rgba(0,0,0,0.12);
+  --border-hi:  rgba(0,0,0,0.22);
+  --text-hi:    #0f1117;
+  --text-body:  #4a5270;
+  --text-muted: #8b93ad;
+  --text-dim:   #c4c9d9;
+  --accent:     #2d6ef0;
+  --accent-dim: rgba(45,110,240,0.08);
+  --accent-glow:rgba(45,110,240,0.18);
+  --green:      #16a961;
+  --green-dim:  rgba(22,169,97,0.08);
+  --amber:      #d49a0a;
+  --amber-dim:  rgba(212,154,10,0.08);
+  --red:        #df4132;
+  --red-dim:    rgba(223,65,50,0.08);
+  --purple:     #7c52d9;
+  --purple-dim: rgba(124,82,217,0.08);
+  --cyan:       #0ba4c4;
+  --cyan-dim:   rgba(11,164,196,0.08);
+  --medical:    #16a961;
+  --arch:       #d49a0a;
+}
+
+/* ═══════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font-body);background:var(--bg-base);color:var(--text-body);font-size:13px;line-height:1.55;transition:background .25s,color .25s}
+::selection{background:var(--accent);color:#fff}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-md);border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:var(--border-hi)}
+a{color:var(--accent);text-decoration:none}
+button{cursor:pointer;font-family:var(--font-body)}
+input,select,textarea{font-family:var(--font-body)}
+
+/* ═══════════════════════════════════════════
+   APP SHELL
+═══════════════════════════════════════════ */
+.app{display:flex;height:100vh;overflow:hidden;position:relative}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:248px;min-width:248px;display:flex;flex-direction:column;
+  background:var(--bg-surface);border-right:1px solid var(--border);
+  transition:background .25s,border-color .25s;z-index:20;overflow:hidden
+}
+.brand{
+  padding:18px 18px 14px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:11px;flex-shrink:0
+}
+.brand-logo{
+  width:36px;height:36px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent) 0%,var(--purple) 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-size:15px;font-weight:800;color:#fff;
+  box-shadow:0 2px 12px var(--accent-glow)
+}
+.brand-text{display:flex;flex-direction:column;gap:1px}
+.brand-name{font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--text-hi);letter-spacing:-.02em}
+.brand-name span{color:var(--accent)}
+.brand-ver{font-size:9px;font-family:var(--font-mono);color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase}
+
+.nav-area{flex:1;overflow-y:auto;padding:10px 8px 6px}
+.nav-section{
+  font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--text-dim);padding:12px 10px 5px;font-family:var(--font-display)
+}
+.nav-item{
+  display:flex;align-items:center;gap:9px;width:100%;padding:8px 10px;
+  border-radius:var(--radius-sm);border:none;background:none;
+  color:var(--text-body);font-size:12.5px;font-weight:400;
+  cursor:pointer;text-align:left;transition:var(--transition);position:relative;
+  font-family:var(--font-body)
+}
+.nav-item:hover{background:var(--bg-hover);color:var(--text-hi)}
+.nav-item.active{background:var(--accent-dim);color:var(--accent);font-weight:500}
+.nav-item svg{width:15px;height:15px;flex-shrink:0;opacity:.6;transition:opacity .15s}
+.nav-item.active svg,.nav-item:hover svg{opacity:1}
+.nav-pill{
+  margin-left:auto;font-size:9.5px;font-family:var(--font-mono);
+  background:var(--bg-raised);color:var(--text-muted);padding:1px 6px;border-radius:20px;
+  transition:background .15s,color .15s
+}
+.nav-item.active .nav-pill{background:var(--accent-dim);color:var(--accent)}
+
+.sidebar-bottom{padding:10px 8px 12px;border-top:1px solid var(--border);flex-shrink:0}
+.ds-card{
+  display:flex;align-items:center;gap:9px;padding:10px 11px;
+  background:var(--bg-raised);border:1px solid var(--border);border-radius:var(--radius);
+  cursor:pointer;transition:var(--transition)
+}
+.ds-card:hover{border-color:var(--border-md)}
+.ds-led{width:7px;height:7px;border-radius:50%;background:var(--text-dim);flex-shrink:0;transition:background .3s}
+.ds-led.on{background:var(--green);box-shadow:0 0 6px var(--green)}
+.ds-label{flex:1;min-width:0}
+.ds-label-name{font-size:12px;font-weight:500;color:var(--text-hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ds-label-meta{font-size:10px;color:var(--text-muted);margin-top:1px}
+
+/* ── TOPBAR ── */
+.topbar{
+  height:54px;background:var(--bg-surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 22px;gap:10px;flex-shrink:0;
+  transition:background .25s,border-color .25s
+}
+.tb-info{flex:1;min-width:0}
+.tb-title{font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--text-hi);letter-spacing:-.01em}
+.tb-sub{font-size:11px;color:var(--text-muted)}
+.tb-sep{width:1px;height:22px;background:var(--border);flex-shrink:0}
+
+/* ── THEME TOGGLE ── */
+.theme-btn{
+  width:38px;height:22px;border-radius:20px;border:none;
+  background:var(--bg-raised);border:1.5px solid var(--border-md);
+  display:flex;align-items:center;padding:2px;cursor:pointer;
+  transition:var(--transition);position:relative;flex-shrink:0
+}
+.theme-knob{
+  width:16px;height:16px;border-radius:50%;background:var(--accent);
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1);
+  display:flex;align-items:center;justify-content:center;font-size:9px
+}
+[data-theme="dark"] .theme-knob{transform:translateX(0)}
+[data-theme="light"] .theme-knob{transform:translateX(16px)}
+
+/* ── CONTENT ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.content-area{flex:1;overflow:hidden;position:relative}
+.page{
+  display:none;height:100%;overflow-y:auto;padding:24px 26px;
+  animation:pageIn .2s ease
+}
+.page.active{display:block}
+@keyframes pageIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* ═══════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════ */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:var(--radius-sm);
+  border:1px solid var(--border-md);background:var(--bg-raised);
+  color:var(--text-hi);font-size:12px;font-weight:500;font-family:var(--font-body);
+  cursor:pointer;transition:var(--transition);white-space:nowrap;
+  box-shadow:var(--shadow-sm)
+}
+.btn:hover{background:var(--bg-hover);border-color:var(--border-hi);box-shadow:var(--shadow)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 2px 10px var(--accent-glow)}
+.btn-primary:hover{filter:brightness(1.1);box-shadow:0 4px 16px var(--accent-glow)}
+.btn-success{background:var(--green);border-color:var(--green);color:#fff}
+.btn-success:hover{filter:brightness(1.08)}
+.btn-danger{background:var(--red-dim);border-color:var(--red);color:var(--red)}
+.btn-danger:hover{background:var(--red);color:#fff}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--text-body);box-shadow:none}
+.btn-ghost:hover{background:var(--bg-hover);color:var(--text-hi);border-color:var(--border)}
+.btn-sm{padding:5px 10px;font-size:11px;border-radius:var(--radius-sm)}
+.btn-xs{padding:3px 8px;font-size:10px}
+.btn-icon{padding:6px;aspect-ratio:1}
+.btn-amber{background:var(--amber-dim);border-color:var(--amber);color:var(--amber)}
+.btn-amber:hover{background:var(--amber);color:#000}
+.btn:disabled{opacity:.45;cursor:not-allowed;pointer-events:none}
+
+/* ═══════════════════════════════════════════
+   CARDS & TILES
+═══════════════════════════════════════════ */
+.card{
+  background:var(--bg-surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:18px 20px;
+  transition:background .25s,border-color .25s
+}
+.card-sm{padding:14px 16px}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:8px}
+.card-title{font-family:var(--font-display);font-size:13.5px;font-weight:600;color:var(--text-hi)}
+.card-sub{font-size:11px;color:var(--text-muted);margin-top:2px}
+.card-actions{display:flex;gap:6px;align-items:center;flex-shrink:0}
+
+/* STAT TILES */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.tile{
+  background:var(--bg-surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:16px 18px;position:relative;overflow:hidden;
+  transition:var(--transition)
+}
+.tile:hover{border-color:var(--border-md);transform:translateY(-1px);box-shadow:var(--shadow)}
+.tile-stripe{
+  position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:var(--tile-c,var(--accent));opacity:.7
+}
+.tile-label{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;font-family:var(--font-display)}
+.tile-val{font-size:26px;font-weight:300;color:var(--text-hi);font-family:var(--font-mono);letter-spacing:-.04em;line-height:1}
+.tile-val small{font-size:13px;color:var(--text-muted)}
+.tile-note{font-size:11px;color:var(--text-muted);margin-top:5px}
+.tile-note.pos{color:var(--green)}
+.tile-note.neg{color:var(--red)}
+.tile-ico{position:absolute;top:14px;right:14px;font-size:22px;opacity:.1;pointer-events:none}
+
+/* ═══════════════════════════════════════════
+   GRID LAYOUTS
+═══════════════════════════════════════════ */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.g-c2{grid-column:span 2}
+.g-c3{grid-column:span 3}
+.mb8{margin-bottom:8px}
+.mb12{margin-bottom:12px}
+.mb16{margin-bottom:16px}
+.mb20{margin-bottom:20px}
+.mt8{margin-top:8px}
+.mt12{margin-top:12px}
+.mt16{margin-top:16px}
+.mt20{margin-top:20px}
+.fw{width:100%}
+.flex{display:flex;align-items:center;gap:8px}
+.flex-end{justify-content:flex-end}
+.flex-between{justify-content:space-between}
+
+/* ═══════════════════════════════════════════
+   PAGE HEADERS
+═══════════════════════════════════════════ */
+.page-hdr{margin-bottom:22px}
+.page-title{
+  font-family:var(--font-display);font-size:28px;font-weight:700;
+  color:var(--text-hi);line-height:1.15;letter-spacing:-.03em;margin-bottom:5px
+}
+.page-title em{font-style:italic;color:var(--accent)}
+.page-desc{font-size:12.5px;color:var(--text-muted);line-height:1.5}
+
+/* ═══════════════════════════════════════════
+   WORKFLOW STEPPER
+═══════════════════════════════════════════ */
+.stepper{
+  display:flex;align-items:center;padding:14px 20px;
+  background:var(--bg-surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);margin-bottom:20px;gap:4px
+}
+.step{display:flex;align-items:center;gap:7px}
+.step-n{
+  width:26px;height:26px;border-radius:50%;border:1.5px solid var(--text-dim);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:var(--text-muted);
+  font-family:var(--font-mono);transition:var(--transition);flex-shrink:0
+}
+.step.done .step-n{background:var(--green);border-color:var(--green);color:#fff}
+.step.active .step-n{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 0 12px var(--accent-glow)}
+.step-label{font-size:11.5px;color:var(--text-muted);font-weight:400;transition:var(--transition)}
+.step.done .step-label{color:var(--green)}
+.step.active .step-label{color:var(--text-hi);font-weight:500}
+.step-line{flex:1;height:1px;background:var(--border);margin:0 6px;transition:background .3s}
+.step-line.done{background:var(--green)}
+
+/* ═══════════════════════════════════════════
+   FORMS
+═══════════════════════════════════════════ */
+.field{margin-bottom:14px}
+.field>label{
+  display:block;font-size:11.5px;font-weight:500;
+  color:var(--text-body);margin-bottom:5px;letter-spacing:.01em
+}
+.inp{
+  width:100%;background:var(--bg-raised);border:1px solid var(--border-md);
+  color:var(--text-hi);padding:8px 11px;border-radius:var(--radius-sm);
+  font-size:12.5px;font-family:var(--font-body);outline:none;transition:var(--transition)
+}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+select.inp option{background:var(--bg-raised);color:var(--text-hi)}
+.inp[multiple]{height:auto;padding:6px}
+textarea.inp{resize:vertical;line-height:1.5}
+.inp-row{display:flex;gap:8px;align-items:flex-end}
+.inp-group{display:flex;gap:0}
+.inp-group .inp:not(:last-child){border-radius:var(--radius-sm) 0 0 var(--radius-sm);border-right:none}
+.inp-group .inp:last-child{border-radius:0 var(--radius-sm) var(--radius-sm) 0}
+
+/* ═══════════════════════════════════════════
+   TABLES
+═══════════════════════════════════════════ */
+.tbl-wrap{border:1px solid var(--border);border-radius:var(--radius);overflow:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{
+  padding:9px 12px;text-align:left;font-size:10px;font-weight:600;
+  color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase;
+  border-bottom:1px solid var(--border);background:var(--bg-raised);
+  position:sticky;top:0;z-index:2;white-space:nowrap;font-family:var(--font-display)
+}
+.tbl td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text-body);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr:hover td{background:var(--bg-hover);color:var(--text-hi)}
+.tbl td:first-child,.tbl td.strong{color:var(--text-hi);font-weight:500}
+.mono{font-family:var(--font-mono);font-size:11.5px}
+
+/* ═══════════════════════════════════════════
+   BADGES
+═══════════════════════════════════════════ */
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:500;
+  white-space:nowrap;border:1px solid transparent;font-family:var(--font-display)
+}
+.bd-green{background:var(--green-dim);color:var(--green);border-color:rgba(34,201,126,.2)}
+.bd-blue{background:var(--accent-dim);color:var(--accent);border-color:rgba(77,133,255,.2)}
+.bd-amber{background:var(--amber-dim);color:var(--amber);border-color:rgba(240,180,41,.2)}
+.bd-red{background:var(--red-dim);color:var(--red);border-color:rgba(240,97,76,.2)}
+.bd-purple{background:var(--purple-dim);color:var(--purple);border-color:rgba(157,124,240,.2)}
+.bd-gray{background:var(--bg-raised);color:var(--text-muted);border-color:var(--border-md)}
+.bd-cyan{background:var(--cyan-dim);color:var(--cyan);border-color:rgba(25,197,228,.2)}
+
+/* ═══════════════════════════════════════════
+   INSIGHTS / CALLOUTS
+═══════════════════════════════════════════ */
+.insight{
+  padding:12px 14px;border-radius:var(--radius);margin-bottom:9px;
+  border:1px solid transparent;position:relative;padding-left:16px
+}
+.insight::before{content:'';position:absolute;left:0;top:4px;bottom:4px;width:3px;border-radius:2px}
+.ins-blue{background:var(--accent-dim);border-color:rgba(77,133,255,.15)}.ins-blue::before{background:var(--accent)}
+.ins-green{background:var(--green-dim);border-color:rgba(34,201,126,.15)}.ins-green::before{background:var(--green)}
+.ins-amber{background:var(--amber-dim);border-color:rgba(240,180,41,.15)}.ins-amber::before{background:var(--amber)}
+.ins-red{background:var(--red-dim);border-color:rgba(240,97,76,.15)}.ins-red::before{background:var(--red)}
+.ins-purple{background:var(--purple-dim);border-color:rgba(157,124,240,.15)}.ins-purple::before{background:var(--purple)}
+.insight-title{font-size:12px;font-weight:600;color:var(--text-hi);margin-bottom:3px;font-family:var(--font-display)}
+.insight-body{font-size:11.5px;color:var(--text-body);line-height:1.5}
+
+/* ═══════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════ */
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:18px}
+.tab{
+  padding:9px 15px;font-size:12px;font-weight:500;color:var(--text-muted);
+  cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;
+  transition:var(--transition);font-family:var(--font-display);letter-spacing:.01em
+}
+.tab:hover{color:var(--text-hi)}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+
+/* ═══════════════════════════════════════════
+   CHARTS
+═══════════════════════════════════════════ */
+.chart-wrap{position:relative}
+.ch-sm{height:180px}
+.ch-md{height:240px}
+.ch-lg{height:300px}
+.ch-xl{height:360px}
+
+/* ═══════════════════════════════════════════
+   CORRELATION MATRIX
+═══════════════════════════════════════════ */
+.corr-outer{overflow:auto;padding:4px}
+.corr-grid{display:inline-flex;flex-direction:column;gap:2px}
+.corr-row{display:flex;gap:2px;align-items:center}
+.corr-lbl{width:85px;font-size:10px;color:var(--text-muted);text-align:right;padding-right:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.corr-cell{
+  width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+  font-size:9.5px;font-family:var(--font-mono);border-radius:5px;cursor:default;
+  transition:transform .15s;position:relative
+}
+.corr-cell:hover{transform:scale(1.18);z-index:5}
+.corr-hdr{width:40px;font-size:9px;color:var(--text-muted);text-align:center;padding:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+
+/* ═══════════════════════════════════════════
+   DATA GRID
+═══════════════════════════════════════════ */
+.dg-wrap{overflow:auto}
+.dg{border-collapse:collapse;font-size:12px;min-width:100%}
+.dg th{
+  background:var(--bg-raised);border:1px solid var(--border);
+  padding:7px 10px;font-size:10px;font-weight:600;color:var(--text-muted);
+  letter-spacing:.07em;text-transform:uppercase;position:sticky;top:0;z-index:2;
+  font-family:var(--font-display)
+}
+.dg th input{
+  background:transparent;border:none;outline:none;
+  color:var(--text-muted);font-size:10px;font-weight:600;
+  letter-spacing:.07em;text-transform:uppercase;font-family:var(--font-display);
+  width:100%;min-width:80px
+}
+.dg td{border:1px solid var(--border);padding:0}
+.dg td input{
+  background:transparent;border:none;outline:none;
+  color:var(--text-hi);padding:7px 9px;font-size:12px;
+  font-family:var(--font-mono);width:100%;min-width:80px;transition:background .1s
+}
+.dg td input:focus{background:var(--accent-dim)}
+.dg .rn{
+  background:var(--bg-raised);border-right:2px solid var(--border-md);
+  color:var(--text-muted);font-size:10px;font-family:var(--font-mono);
+  text-align:center;width:34px;min-width:34px;padding:7px 4px;cursor:default
+}
+
+/* ═══════════════════════════════════════════
+   UPLOAD ZONE
+═══════════════════════════════════════════ */
+.drop-zone{
+  border:2px dashed var(--border-md);border-radius:var(--radius-xl);
+  padding:48px 24px;text-align:center;cursor:pointer;
+  transition:var(--transition);background:var(--bg-surface)
+}
+.drop-zone:hover,.drop-zone.over{border-color:var(--accent);background:var(--accent-dim)}
+.dz-ico{font-size:44px;margin-bottom:12px;opacity:.3;display:block}
+.dz-title{font-family:var(--font-display);font-size:16px;font-weight:600;color:var(--text-hi);margin-bottom:6px}
+.dz-sub{font-size:12px;color:var(--text-muted)}
+
+/* ═══════════════════════════════════════════
+   PROGRESS BARS
+═══════════════════════════════════════════ */
+.pbar-wrap{margin-bottom:10px}
+.pbar-info{display:flex;justify-content:space-between;font-size:11.5px;color:var(--text-body);margin-bottom:5px}
+.pbar{height:5px;background:var(--bg-raised);border-radius:3px;overflow:hidden}
+.pbar-fill{height:100%;border-radius:3px;transition:width .7s ease}
+
+/* ═══════════════════════════════════════════
+   EMPTY STATE
+═══════════════════════════════════════════ */
+.empty{text-align:center;padding:60px 20px}
+.empty-ico{font-size:44px;margin-bottom:14px;opacity:.18;display:block}
+.empty-title{font-family:var(--font-display);font-size:17px;font-weight:600;color:var(--text-hi);margin-bottom:6px}
+.empty-sub{font-size:12px;color:var(--text-muted);margin-bottom:22px;line-height:1.5}
+
+/* ═══════════════════════════════════════════
+   RESULT BLOCK
+═══════════════════════════════════════════ */
+.result-block{
+  background:var(--bg-raised);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px 16px;margin-top:12px
+}
+.result-block h4{
+  font-family:var(--font-display);font-size:12px;font-weight:600;
+  color:var(--text-hi);margin-bottom:10px;
+  display:flex;align-items:center;gap:7px;letter-spacing:.01em
+}
+
+/* ═══════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════ */
+#toast-container{
+  position:fixed;bottom:22px;right:22px;z-index:9999;
+  display:flex;flex-direction:column;gap:8px;pointer-events:none
+}
+.toast{
+  background:var(--bg-surface);border:1px solid var(--border-md);
+  border-radius:var(--radius);padding:12px 16px;font-size:12.5px;
+  color:var(--text-hi);pointer-events:all;box-shadow:var(--shadow-lg);
+  max-width:320px;display:flex;align-items:center;gap:10px;
+  animation:toastIn .2s ease;font-family:var(--font-body)
+}
+.toast-ok{border-left:3px solid var(--green)}
+.toast-err{border-left:3px solid var(--red)}
+.toast-info{border-left:3px solid var(--accent)}
+.toast-ico{font-size:14px;flex-shrink:0}
+@keyframes toastIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+
+/* ═══════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════ */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;
+  display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(5px);animation:fadeIn .15s ease
+}
+.modal-bg.show{display:flex}
+.modal{
+  background:var(--bg-surface);border:1px solid var(--border-md);
+  border-radius:var(--radius-xl);padding:28px 30px;width:90%;max-width:560px;
+  max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg);position:relative;
+  animation:modalIn .2s ease
+}
+.modal-close{
+  position:absolute;top:16px;right:16px;background:none;border:none;
+  color:var(--text-muted);cursor:pointer;font-size:18px;
+  width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-sm);transition:var(--transition)
+}
+.modal-close:hover{background:var(--bg-hover);color:var(--text-hi)}
+.modal-title{font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--text-hi);margin-bottom:4px;letter-spacing:-.02em}
+.modal-sub{font-size:12px;color:var(--text-muted);margin-bottom:20px}
+@keyframes modalIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* ═══════════════════════════════════════════
+   VAR LIST
+═══════════════════════════════════════════ */
+.var-list{display:flex;flex-direction:column;gap:5px;max-height:300px;overflow-y:auto}
+.var-item{
+  display:flex;align-items:center;gap:8px;padding:7px 10px;
+  background:var(--bg-raised);border:1px solid var(--border);
+  border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition)
+}
+.var-item:hover{border-color:var(--border-md)}
+.var-item.selected{border-color:var(--accent);background:var(--accent-dim)}
+.vtype{
+  width:16px;height:16px;border-radius:4px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:8px;font-weight:700;font-family:var(--font-mono)
+}
+.vt-n{background:rgba(77,133,255,.2);color:var(--accent)}
+.vt-c{background:rgba(157,124,240,.2);color:var(--purple)}
+.vt-b{background:rgba(34,201,126,.2);color:var(--green)}
+.vname{font-size:12px;font-weight:500;color:var(--text-hi);flex:1}
+.vmeta{font-size:10px;color:var(--text-muted);font-family:var(--font-mono)}
+
+/* ═══════════════════════════════════════════
+   STATUS DOTS
+═══════════════════════════════════════════ */
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.dot-green{background:var(--green);box-shadow:0 0 5px var(--green)}
+.dot-amber{background:var(--amber)}
+.dot-red{background:var(--red)}
+.dot-gray{background:var(--text-muted)}
+
+/* ═══════════════════════════════════════════
+   SCROLLABLE RESULT AREA
+═══════════════════════════════════════════ */
+.results-area{max-height:380px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius)}
+
+/* ═══════════════════════════════════════════
+   SAMPLE CARDS
+═══════════════════════════════════════════ */
+.sample-card{
+  border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;
+  cursor:pointer;transition:var(--transition);background:var(--bg-surface)
+}
+.sample-card:hover{border-color:var(--border-hi);transform:translateY(-2px);box-shadow:var(--shadow)}
+
+/* ═══════════════════════════════════════════
+   CHIPS & CODE
+═══════════════════════════════════════════ */
+.chip{
+  display:inline-block;padding:2px 8px;border-radius:var(--radius-sm);
+  font-size:10.5px;font-family:var(--font-mono);background:var(--bg-raised);
+  color:var(--text-muted);border:1px solid var(--border)
+}
+code.c{
+  font-family:var(--font-mono);font-size:11px;color:var(--cyan);
+  background:var(--bg-raised);padding:2px 6px;border-radius:4px;border:1px solid var(--border)
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════ */
+@media(max-width:768px){
+  .sidebar{display:none}
+  .tiles{grid-template-columns:1fr 1fr}
+  .g2,.g3{grid-template-columns:1fr}
+  .g4{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-logo">SQ</div>
+    <div class="brand-text">
+      <div class="brand-name">Stat<span>IQ</span></div>
+      <div class="brand-ver">v3.0 · Full Edition</div>
+    </div>
+  </div>
+
+  <nav class="nav-area">
+    <div class="nav-section">Overview</div>
+    <button class="nav-item active" onclick="goPage('home')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 6.5L8 2l6 4.5V14a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z"/></svg>
+      Home Dashboard
+    </button>
+    <button class="nav-item" onclick="goPage('dataview')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M2 6h12M6 6v7"/></svg>
+      Data View
+      <span class="nav-pill" id="nb-rows">—</span>
+    </button>
+    <button class="nav-item" onclick="goPage('import')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 10V2M5 5l3-3 3 3M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2"/></svg>
+      Import / Enter Data
+    </button>
+
+    <div class="nav-section">Descriptive</div>
+    <button class="nav-item" onclick="goPage('descriptive')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 12l4-4 3 2 4-6"/></svg>
+      Frequencies & Stats
+    </button>
+    <button class="nav-item" onclick="goPage('crosstabs')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>
+      Crosstabs
+    </button>
+
+    <div class="nav-section">Inferential</div>
+    <button class="nav-item" onclick="goPage('compare')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 13V3M12 13V3M1 8h14"/></svg>
+      Compare Means (T-Tests)
+    </button>
+    <button class="nav-item" onclick="goPage('anova')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 13l3-5 3 3 3-7 3 5"/></svg>
+      ANOVA
+    </button>
+    <button class="nav-item" onclick="goPage('nonparam')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 11c2-3 4-6 6-4s4 4 6 1"/></svg>
+      Non-Parametric Tests
+    </button>
+
+    <div class="nav-section">Models</div>
+    <button class="nav-item" onclick="goPage('regression')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 13l12-10"/><circle cx="4" cy="11" r="1.5" fill="currentColor"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="12" cy="5" r="1.5" fill="currentColor"/></svg>
+      Regression
+    </button>
+    <button class="nav-item" onclick="goPage('correlation')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="4" cy="12" r="1.5"/><circle cx="8" cy="7" r="1.5"/><circle cx="12" cy="4" r="1.5"/><circle cx="6" cy="10" r="1.5"/><circle cx="10" cy="6" r="1.5"/></svg>
+      Correlation Matrix
+    </button>
+    <button class="nav-item" onclick="goPage('factor')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="5"/><path d="M8 3v10M3 8h10"/></svg>
+      Factor Analysis (PCA)
+    </button>
+
+    <div class="nav-section">Modules</div>
+    <button class="nav-item" onclick="goPage('medical')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="2" width="6" height="12" rx="1.5"/><path d="M5 8h6M8 5v6"/></svg>
+      Medical Analysis
+      <span class="dot dot-green" style="margin-left:auto"></span>
+    </button>
+    <button class="nav-item" onclick="goPage('archaeology')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2L3 7v7h10V7L8 2z"/><path d="M6 14v-4h4v4"/></svg>
+      Archaeology
+    </button>
+
+    <div class="nav-section">Output</div>
+    <button class="nav-item" onclick="goPage('charts')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="9" width="3" height="5" rx="1"/><rect x="6.5" y="5" width="3" height="9" rx="1"/><rect x="11" y="2" width="3" height="12" rx="1"/></svg>
+      Charts &amp; Graphs
+    </button>
+    <button class="nav-item" onclick="goPage('report')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 2H4a1 1 0 00-1 1v10a1 1 0 001 1h8a1 1 0 001-1V5l-3-3z"/><path d="M10 2v3h3M5 8h6M5 11h4"/></svg>
+      Export Report
+    </button>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <div class="ds-card" onclick="goPage('import')">
+      <div class="ds-led" id="ds-led"></div>
+      <div class="ds-label">
+        <div class="ds-label-name" id="ds-name">No dataset loaded</div>
+        <div class="ds-label-meta" id="ds-meta">Click to import data</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<div class="main">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="tb-info">
+      <div class="tb-title" id="tb-title">Home Dashboard</div>
+      <div class="tb-sub" id="tb-sub">Statistical Analysis Platform</div>
+    </div>
+    <button class="btn btn-sm" onclick="loadSample('medical')">⚕ Medical</button>
+    <button class="btn btn-sm" onclick="loadSample('arch')">⚱ Archaeology</button>
+    <div class="tb-sep"></div>
+    <!-- Theme Toggle -->
+    <div style="display:flex;align-items:center;gap:7px">
+      <span style="font-size:12px;color:var(--text-muted)" id="theme-label">🌙</span>
+      <button class="theme-btn" onclick="toggleTheme()" title="Toggle light/dark mode">
+        <div class="theme-knob" id="theme-knob">☀</div>
+      </button>
+    </div>
+    <div class="tb-sep"></div>
+    <button class="btn btn-primary btn-sm" onclick="goPage('import')">+ Import Data</button>
+  </div>
+
+  <!-- Pages -->
+  <div class="content-area">
+
+    <!-- ══════ HOME ══════ -->
+    <div id="pg-home" class="page active">
+      <div class="page-hdr">
+        <h1 class="page-title">Welcome to <em>StatIQ</em></h1>
+        <p class="page-desc">Full-featured statistical analysis — load a dataset to begin. All analyses run instantly in the browser, powered by a PHP/Laravel backend in production.</p>
+      </div>
+
+      <div class="stepper" id="workflow">
+        <div class="step done"><div class="step-n">✓</div><div class="step-label">Load Data</div></div>
+        <div class="step-line done" id="sl1"></div>
+        <div class="step active" id="s2"><div class="step-n">2</div><div class="step-label">Explore</div></div>
+        <div class="step-line" id="sl2"></div>
+        <div class="step" id="s3"><div class="step-n">3</div><div class="step-label">Analyze</div></div>
+        <div class="step-line" id="sl3"></div>
+        <div class="step" id="s4"><div class="step-n">4</div><div class="step-label">Visualize</div></div>
+        <div class="step-line" id="sl4"></div>
+        <div class="step" id="s5"><div class="step-n">5</div><div class="step-label">Export</div></div>
+      </div>
+
+      <div class="tiles" id="home-tiles">
+        <div class="tile" style="--tile-c:var(--accent)"><div class="tile-ico">📦</div><div class="tile-label">Rows</div><div class="tile-val" id="h-rows">—</div><div class="tile-note">Records loaded</div></div>
+        <div class="tile" style="--tile-c:var(--purple)"><div class="tile-ico">📋</div><div class="tile-label">Variables</div><div class="tile-val" id="h-cols">—</div><div class="tile-note" id="h-types">No dataset</div></div>
+        <div class="tile" style="--tile-c:var(--green)"><div class="tile-ico">✅</div><div class="tile-label">Completeness</div><div class="tile-val" id="h-comp">—<small>%</small></div><div class="tile-note" id="h-miss">—</div></div>
+        <div class="tile" style="--tile-c:var(--amber)"><div class="tile-ico">🔬</div><div class="tile-label">Module</div><div class="tile-val" id="h-mod" style="font-size:15px;padding-top:4px">—</div><div class="tile-note">Auto-detected</div></div>
+        <div class="tile-stripe"></div>
+      </div>
+
+      <!-- No data -->
+      <div id="home-empty">
+        <div class="g2 mb20">
+          <div class="sample-card" onclick="loadSample('medical')">
+            <div style="font-size:32px;margin-bottom:12px">⚕️</div>
+            <div style="font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--text-hi);margin-bottom:6px">Medical Patient Dataset</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.5">120 patients · 13 variables<br>Risk scoring, correlations, regression, t-tests</div>
+            <span class="badge bd-green">▶ Load sample</span>
+          </div>
+          <div class="sample-card" onclick="loadSample('arch')">
+            <div style="font-size:32px;margin-bottom:12px">⚱️</div>
+            <div style="font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--text-hi);margin-bottom:6px">Archaeology Dataset</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.5">90 artifacts · 11 variables<br>Classification, distribution, temporal analysis</div>
+            <span class="badge bd-amber">▶ Load sample</span>
+          </div>
+        </div>
+        <div class="insight ins-blue">
+          <div class="insight-title">PHP Backend Architecture</div>
+          <div class="insight-body">This frontend connects to a <strong>Laravel 11</strong> REST API. File uploads are parsed by <strong>PhpSpreadsheet</strong> (Excel) and <strong>League/CSV</strong>. Statistical computations run in <strong>PHP services</strong>. Reports are generated as PDFs using <strong>DomPDF</strong>. All data stored in <strong>MySQL 8</strong> with Redis queue for async jobs.</div>
+        </div>
+      </div>
+
+      <!-- With data -->
+      <div id="home-data" style="display:none">
+        <div class="g2 mb14">
+          <div class="card">
+            <div class="card-head">
+              <div><div class="card-title">Variable Overview</div><div class="card-sub">All columns in dataset</div></div>
+            </div>
+            <div class="var-list" id="home-vars"></div>
+          </div>
+          <div class="card">
+            <div class="card-head">
+              <div><div class="card-title">Quick Distribution</div><div class="card-sub">Histogram of selected variable</div></div>
+              <select class="btn btn-sm btn-ghost" id="hvar-sel" style="font-size:11px;padding:4px 8px" onchange="homeQuickPlot()"></select>
+            </div>
+            <div class="chart-wrap ch-md"><canvas id="ch-home"></canvas></div>
+          </div>
+        </div>
+        <div class="g2">
+          <div class="card">
+            <div class="card-head">
+              <div><div class="card-title">AI Insights</div><div class="card-sub">Auto-detected patterns</div></div>
+              <button class="btn btn-ghost btn-sm" onclick="buildInsights()">↺</button>
+            </div>
+            <div id="insights-list"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Data Preview</div><div class="card-sub">First 10 rows</div></div>
+            <div class="tbl-wrap" style="max-height:260px">
+              <table class="tbl"><thead id="prev-head"></thead><tbody id="prev-body"></tbody></table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ DATA VIEW ══════ -->
+    <div id="pg-dataview" class="page">
+      <div class="page-hdr">
+        <div class="flex flex-between mb12">
+          <div><h1 class="page-title">Data <em>View</em></h1><p class="page-desc">Editable spreadsheet — click any cell to edit</p></div>
+          <div class="flex"><button class="btn btn-sm" onclick="sortByFirst()">Sort ↑↓</button><button class="btn btn-danger btn-sm" onclick="clearAll()">Clear</button></div>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="dg-wrap" style="max-height:calc(100vh - 200px)">
+          <table class="dg" id="data-grid"></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ IMPORT ══════ -->
+    <div id="pg-import" class="page">
+      <div class="page-hdr">
+        <h1 class="page-title">Import / Enter <em>Data</em></h1>
+        <p class="page-desc">Upload a file, paste CSV text, or enter data directly in the grid editor</p>
+      </div>
+      <div class="tabs">
+        <div class="tab on" onclick="iTab('file',this)">📁 Upload File</div>
+        <div class="tab" onclick="iTab('paste',this)">📋 Paste CSV</div>
+        <div class="tab" onclick="iTab('manual',this)">✏️ Manual Grid</div>
+        <div class="tab" onclick="iTab('samples',this)">🗂 Sample Data</div>
+      </div>
+
+      <div id="itab-file">
+        <div class="g2">
+          <div>
+            <div class="drop-zone" id="dz" onclick="document.getElementById('fi').click()" ondragover="dzOver(event)" ondragleave="dzLeave()" ondrop="dzDrop(event)">
+              <span class="dz-ico">⬆️</span>
+              <div class="dz-title">Drop file here or click to browse</div>
+              <div class="dz-sub">Supports .csv, .xlsx, .tsv, .txt files</div>
+              <div class="flex mt12" style="justify-content:center;gap:6px;flex-wrap:wrap">
+                <span class="badge bd-gray">.csv</span><span class="badge bd-gray">.xlsx</span><span class="badge bd-gray">.tsv</span><span class="badge bd-gray">.txt</span>
+              </div>
+            </div>
+            <input type="file" id="fi" accept=".csv,.tsv,.txt,.xlsx" style="display:none" onchange="fileSelected(event)">
+            <div id="file-status" class="mt12"></div>
+          </div>
+          <div class="card">
+            <div class="card-title mb12">PHP Backend Processing</div>
+            <div class="insight ins-blue mb8">
+              <div class="insight-title">Excel (.xlsx)</div>
+              <div class="insight-body">Parsed server-side by <code class="c">PhpSpreadsheet</code> via <code class="c">POST /api/v1/datasets/upload</code></div>
+            </div>
+            <div class="insight ins-green mb8">
+              <div class="insight-title">CSV / TSV</div>
+              <div class="insight-body">Parsed by <code class="c">League\CSV</code> with auto-delimiter detection</div>
+            </div>
+            <div class="insight ins-purple">
+              <div class="insight-title">Auto-Detection</div>
+              <div class="insight-body">Column names analyzed to detect Medical or Archaeology module automatically</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="itab-paste" style="display:none">
+        <div class="field"><label>Paste CSV or tab-separated data — first row = column headers</label>
+          <textarea class="inp" id="paste-area" rows="12" style="font-family:var(--font-mono);font-size:11.5px" placeholder="patient_id,age,gender,bmi,systolic_bp,glucose&#10;P001,67,M,31.2,145,132&#10;P002,34,F,22.4,118,89&#10;P003,58,M,27.8,160,105"></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="parsePaste()">Parse &amp; Load →</button>
+      </div>
+
+      <div id="itab-manual" style="display:none">
+        <div class="flex mb12" style="gap:10px;flex-wrap:wrap">
+          <div class="field" style="margin:0"><label>Rows</label><input type="number" class="inp" id="mr" value="10" min="2" max="500" style="width:72px"></div>
+          <div class="field" style="margin:0"><label>Columns</label><input type="number" class="inp" id="mc" value="6" min="2" max="30" style="width:72px"></div>
+          <button class="btn" style="margin-top:19px" onclick="buildManualGrid()">Build Grid</button>
+          <button class="btn btn-primary" style="margin-top:19px" onclick="importManual()">Import Data →</button>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="overflow:auto;max-height:420px"><table class="dg" id="manual-grid"></table></div>
+        </div>
+      </div>
+
+      <div id="itab-samples" style="display:none">
+        <div class="g2">
+          <div class="sample-card" style="border-color:rgba(34,201,126,.25)" onclick="loadSample('medical')">
+            <div style="font-size:28px;margin-bottom:10px">⚕️</div>
+            <div style="font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--text-hi);margin-bottom:6px">Medical Patient Dataset</div>
+            <div style="font-size:12px;color:var(--text-muted);line-height:1.5;margin-bottom:12px">120 patients · 13 variables<br>Age, gender, BMI, blood pressure, glucose, cholesterol, risk scoring</div>
+            <div class="flex mb12" style="flex-wrap:wrap;gap:5px">
+              <span class="badge bd-green">Medical</span><span class="badge bd-gray">120 rows</span><span class="badge bd-gray">13 cols</span>
+            </div>
+            <button class="btn btn-success fw">Load Medical Sample</button>
+          </div>
+          <div class="sample-card" style="border-color:rgba(240,180,41,.25)" onclick="loadSample('arch')">
+            <div style="font-size:28px;margin-bottom:10px">⚱️</div>
+            <div style="font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--text-hi);margin-bottom:6px">Archaeology Artifacts</div>
+            <div style="font-size:12px;color:var(--text-muted);line-height:1.5;margin-bottom:12px">90 artifacts · 11 variables<br>Site, category, material, period, depth, measurements</div>
+            <div class="flex mb12" style="flex-wrap:wrap;gap:5px">
+              <span class="badge bd-amber">Archaeology</span><span class="badge bd-gray">90 rows</span><span class="badge bd-gray">11 cols</span>
+            </div>
+            <button class="btn btn-amber fw">Load Archaeology Sample</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ DESCRIPTIVE ══════ -->
+    <div id="pg-descriptive" class="page">
+      <div class="page-hdr"><h1 class="page-title">Frequencies &amp; <em>Descriptive Statistics</em></h1><p class="page-desc">Complete summary statistics, frequency tables, percentiles, and distributions for every variable</p></div>
+      <div id="desc-gate"></div>
+      <div id="desc-body" style="display:none">
+        <div class="tiles" id="desc-tiles"></div>
+        <div class="g2 mb14">
+          <div class="card">
+            <div class="card-head">
+              <div><div class="card-title">Variable Distribution</div><div class="card-sub">Select a variable to view histogram</div></div>
+              <select class="inp" id="desc-sel" onchange="descUpdate()" style="width:160px;font-size:11px;padding:5px 8px"></select>
+            </div>
+            <div class="chart-wrap ch-lg"><canvas id="ch-desc"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Descriptive Statistics</div></div>
+            <div class="tbl-wrap" style="max-height:340px">
+              <table class="tbl"><thead><tr><th>Statistic</th><th>Value</th></tr></thead><tbody id="desc-stats-body"></tbody></table>
+            </div>
+          </div>
+        </div>
+        <div class="card mb14">
+          <div class="card-head"><div class="card-title">All Variables — Complete Summary</div><button class="btn btn-ghost btn-sm" onclick="copyTbl('desc-all')">Copy Table</button></div>
+          <div class="tbl-wrap" style="max-height:320px">
+            <table class="tbl" id="desc-all"><thead><tr><th>Variable</th><th>Type</th><th>N</th><th>Mean</th><th>Median</th><th>Std Dev</th><th>Variance</th><th>Min</th><th>Max</th><th>Range</th><th>Skewness</th><th>Kurtosis</th><th>SE Mean</th><th>Missing</th></tr></thead><tbody id="desc-all-body"></tbody></table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Frequency Table</div><div class="card-sub">Distribution of values for selected variable</div></div>
+          <select class="inp mb12" id="freq-sel" onchange="buildFreq()" style="max-width:240px"></select>
+          <div class="tbl-wrap" style="max-height:260px">
+            <table class="tbl"><thead><tr><th>Value</th><th>Frequency</th><th>Percent %</th><th>Valid %</th><th>Cumulative %</th></tr></thead><tbody id="freq-body"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ CROSSTABS ══════ -->
+    <div id="pg-crosstabs" class="page">
+      <div class="page-hdr"><h1 class="page-title"><em>Crosstabs</em> &amp; Chi-Square</h1><p class="page-desc">Cross-tabulation with chi-square test of independence, Cramer's V, and Phi coefficient</p></div>
+      <div id="ct-gate"></div>
+      <div id="ct-body" style="display:none">
+        <div class="card mb14">
+          <div class="g2">
+            <div class="field"><label>Row Variable</label><select class="inp" id="ct-row"></select></div>
+            <div class="field"><label>Column Variable</label><select class="inp" id="ct-col"></select></div>
+          </div>
+          <button class="btn btn-primary" onclick="runCrosstabs()">Run Crosstabs →</button>
+        </div>
+        <div id="ct-out"></div>
+      </div>
+    </div>
+
+    <!-- ══════ COMPARE MEANS ══════ -->
+    <div id="pg-compare" class="page">
+      <div class="page-hdr"><h1 class="page-title">Compare <em>Means</em></h1><p class="page-desc">One-sample, independent samples, and paired samples t-tests with effect sizes</p></div>
+      <div id="cmp-gate"></div>
+      <div id="cmp-body" style="display:none">
+        <div class="tabs">
+          <div class="tab on" onclick="cmpTab('t1',this)">One-Sample T-Test</div>
+          <div class="tab" onclick="cmpTab('t2',this)">Independent Samples</div>
+          <div class="tab" onclick="cmpTab('tp',this)">Paired Samples</div>
+        </div>
+        <div id="ct-t1">
+          <div class="g2">
+            <div class="card">
+              <div class="card-title mb12">Test Configuration</div>
+              <div class="field"><label>Test Variable</label><select class="inp" id="t1-var"></select></div>
+              <div class="field"><label>Hypothesised Mean (μ₀)</label><input type="number" class="inp" id="t1-mu" value="0"></div>
+              <div class="field"><label>Significance Level (α)</label><select class="inp" id="t1-a"><option value=".05">.05</option><option value=".01">.01</option><option value=".10">.10</option></select></div>
+              <button class="btn btn-primary fw" onclick="runT1()">Run Test →</button>
+            </div>
+            <div class="card" id="t1-out"><p style="color:var(--text-muted);font-size:12px">Configure parameters and click Run</p></div>
+          </div>
+        </div>
+        <div id="ct-t2" style="display:none">
+          <div class="g2">
+            <div class="card">
+              <div class="field"><label>Variable 1</label><select class="inp" id="t2-v1"></select></div>
+              <div class="field"><label>Variable 2</label><select class="inp" id="t2-v2"></select></div>
+              <div class="field"><label>α</label><select class="inp" id="t2-a"><option value=".05">.05</option><option value=".01">.01</option><option value=".10">.10</option></select></div>
+              <button class="btn btn-primary fw" onclick="runT2()">Run Independent T-Test →</button>
+            </div>
+            <div class="card" id="t2-out"><p style="color:var(--text-muted);font-size:12px">Configure and run</p></div>
+          </div>
+        </div>
+        <div id="ct-tp" style="display:none">
+          <div class="g2">
+            <div class="card">
+              <div class="field"><label>Variable 1 (Before)</label><select class="inp" id="tp-v1"></select></div>
+              <div class="field"><label>Variable 2 (After)</label><select class="inp" id="tp-v2"></select></div>
+              <button class="btn btn-primary fw" onclick="runTP()">Run Paired T-Test →</button>
+            </div>
+            <div class="card" id="tp-out"><p style="color:var(--text-muted);font-size:12px">Configure and run</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ ANOVA ══════ -->
+    <div id="pg-anova" class="page">
+      <div class="page-hdr"><h1 class="page-title">Analysis of <em>Variance</em></h1><p class="page-desc">One-way ANOVA with F-test, eta-squared effect size, and group means plot</p></div>
+      <div id="anova-gate"></div>
+      <div id="anova-body" style="display:none">
+        <div class="g2 mb14">
+          <div class="card">
+            <div class="field"><label>Dependent Variable (Numeric)</label><select class="inp" id="av-dep"></select></div>
+            <div class="field"><label>Factor / Grouping Variable</label><select class="inp" id="av-fac"></select></div>
+            <button class="btn btn-primary fw" onclick="runAnova()">Run One-Way ANOVA →</button>
+          </div>
+          <div class="card" id="anova-out"><p style="color:var(--text-muted);font-size:12px">Select variables and run ANOVA</p></div>
+        </div>
+        <div class="card" id="anova-chart-card" style="display:none">
+          <div class="card-head"><div class="card-title">Group Means Comparison</div></div>
+          <div class="chart-wrap ch-md"><canvas id="ch-anova"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ NON-PARAMETRIC ══════ -->
+    <div id="pg-nonparam" class="page">
+      <div class="page-hdr"><h1 class="page-title"><em>Non-Parametric</em> Tests</h1><p class="page-desc">Mann-Whitney U, Wilcoxon signed-rank, Kruskal-Wallis H, and Chi-Square goodness-of-fit</p></div>
+      <div id="np-gate"></div>
+      <div id="np-body" style="display:none">
+        <div class="tabs">
+          <div class="tab on" onclick="npTab('mw',this)">Mann-Whitney U</div>
+          <div class="tab" onclick="npTab('wx',this)">Wilcoxon</div>
+          <div class="tab" onclick="npTab('kw',this)">Kruskal-Wallis</div>
+          <div class="tab" onclick="npTab('chi',this)">Chi-Square GOF</div>
+        </div>
+        <div id="np-mw"><div class="g2"><div class="card">
+          <div class="field"><label>Variable 1</label><select class="inp" id="mw-v1"></select></div>
+          <div class="field"><label>Variable 2</label><select class="inp" id="mw-v2"></select></div>
+          <button class="btn btn-primary fw" onclick="runMW()">Run Mann-Whitney U →</button>
+        </div><div class="card" id="mw-out"><p style="color:var(--text-muted);font-size:12px">Run test to see results</p></div></div></div>
+        <div id="np-wx" style="display:none"><div class="g2"><div class="card">
+          <div class="field"><label>Variable 1</label><select class="inp" id="wx-v1"></select></div>
+          <div class="field"><label>Variable 2</label><select class="inp" id="wx-v2"></select></div>
+          <button class="btn btn-primary fw" onclick="runWX()">Run Wilcoxon →</button>
+        </div><div class="card" id="wx-out"><p style="color:var(--text-muted);font-size:12px">Run test to see results</p></div></div></div>
+        <div id="np-kw" style="display:none"><div class="g2"><div class="card">
+          <div class="field"><label>Numeric Variable</label><select class="inp" id="kw-dep"></select></div>
+          <div class="field"><label>Grouping Variable</label><select class="inp" id="kw-grp"></select></div>
+          <button class="btn btn-primary fw" onclick="runKW()">Run Kruskal-Wallis →</button>
+        </div><div class="card" id="kw-out"><p style="color:var(--text-muted);font-size:12px">Run test to see results</p></div></div></div>
+        <div id="np-chi" style="display:none"><div class="g2"><div class="card">
+          <div class="field"><label>Categorical Variable</label><select class="inp" id="chi-v"></select></div>
+          <button class="btn btn-primary fw" onclick="runChiGOF()">Run Chi-Square GOF →</button>
+        </div><div class="card" id="chi-out"><p style="color:var(--text-muted);font-size:12px">Run test to see results</p></div></div></div>
+      </div>
+    </div>
+
+    <!-- ══════ REGRESSION ══════ -->
+    <div id="pg-regression" class="page">
+      <div class="page-hdr"><h1 class="page-title">Regression <em>Analysis</em></h1><p class="page-desc">Simple linear, multiple regression with R², ANOVA table, coefficients, and residual diagnostics</p></div>
+      <div id="reg-gate"></div>
+      <div id="reg-body" style="display:none">
+        <div class="tabs">
+          <div class="tab on" onclick="regTab('sl',this)">Simple Linear</div>
+          <div class="tab" onclick="regTab('mr',this)">Multiple Regression</div>
+        </div>
+        <div id="rt-sl">
+          <div class="g2 mb14">
+            <div class="card">
+              <div class="field"><label>Dependent Variable (Y)</label><select class="inp" id="sl-y"></select></div>
+              <div class="field"><label>Independent Variable (X)</label><select class="inp" id="sl-x"></select></div>
+              <button class="btn btn-primary fw" onclick="runSLR()">Run Linear Regression →</button>
+            </div>
+            <div class="card" id="slr-out"><p style="color:var(--text-muted);font-size:12px">Select variables and run</p></div>
+          </div>
+          <div class="card" id="slr-chart-card" style="display:none">
+            <div class="card-head"><div class="card-title">Regression Plot</div><div class="card-sub" id="slr-eq"></div></div>
+            <div class="chart-wrap ch-lg"><canvas id="ch-slr"></canvas></div>
+          </div>
+        </div>
+        <div id="rt-mr" style="display:none">
+          <div class="card mb14">
+            <div class="g2">
+              <div class="field"><label>Dependent Variable (Y)</label><select class="inp" id="mr-y"></select></div>
+              <div class="field"><label>Predictors (X) — Ctrl/⌘ for multiple</label><select class="inp" id="mr-xs" multiple style="height:100px"></select></div>
+            </div>
+            <button class="btn btn-primary mt12" onclick="runMR()">Run Multiple Regression →</button>
+          </div>
+          <div id="mr-out"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ CORRELATION ══════ -->
+    <div id="pg-correlation" class="page">
+      <div class="page-hdr"><h1 class="page-title">Correlation <em>Matrix</em></h1><p class="page-desc">Pearson and Spearman rank-order correlations with significance highlighting</p></div>
+      <div id="corr-gate"></div>
+      <div id="corr-body" style="display:none">
+        <div class="g2 mb14">
+          <div class="card">
+            <div class="card-head">
+              <div><div class="card-title">Correlation Matrix</div><div class="card-sub">Hover cells for exact values</div></div>
+              <select class="inp" id="corr-method" onchange="buildCorrMatrix()" style="width:120px;font-size:11px;padding:5px 8px"><option>Pearson</option><option>Spearman</option></select>
+            </div>
+            <div class="corr-outer" id="corr-matrix-wrap"></div>
+          </div>
+          <div>
+            <div class="card mb14">
+              <div class="card-head"><div class="card-title">Scatter Plot</div></div>
+              <div class="flex mb10" style="gap:6px">
+                <select class="inp" id="sc-x" onchange="updateScatter()" style="flex:1;font-size:11px"></select>
+                <span style="color:var(--text-muted);padding-top:9px;font-size:11px;flex-shrink:0">vs</span>
+                <select class="inp" id="sc-y" onchange="updateScatter()" style="flex:1;font-size:11px"></select>
+              </div>
+              <div class="chart-wrap ch-md"><canvas id="ch-scatter"></canvas></div>
+              <div id="sc-rval" class="mt8" style="text-align:center;font-family:var(--font-mono);font-size:12px;color:var(--text-body)"></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><div class="card-title">Strong Correlations (|r|&gt;0.3)</div></div>
+              <div class="tbl-wrap" style="max-height:180px">
+                <table class="tbl"><thead><tr><th>Var 1</th><th>Var 2</th><th>r</th><th>Strength</th><th>Direction</th></tr></thead><tbody id="corr-pairs-body"></tbody></table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ FACTOR ANALYSIS ══════ -->
+    <div id="pg-factor" class="page">
+      <div class="page-hdr"><h1 class="page-title">Factor Analysis <em>(PCA)</em></h1><p class="page-desc">Principal Component Analysis — reduce dimensionality and identify latent structure</p></div>
+      <div id="fa-gate"></div>
+      <div id="fa-body" style="display:none">
+        <div class="card mb14">
+          <div class="field"><label>Select Variables for PCA (hold Ctrl/⌘ to select multiple)</label><select class="inp" id="fa-vars" multiple style="height:130px"></select></div>
+          <button class="btn btn-primary" onclick="runPCA()">Run PCA →</button>
+        </div>
+        <div id="fa-out"></div>
+      </div>
+    </div>
+
+    <!-- ══════ MEDICAL ══════ -->
+    <div id="pg-medical" class="page">
+      <div class="page-hdr"><h1 class="page-title">Medical <em>Analysis</em></h1><p class="page-desc" style="color:var(--medical)">Patient risk scoring · Population health · Clinical correlations · Outcome prediction</p></div>
+      <div id="med-gate"></div>
+      <div id="med-body" style="display:none">
+        <div class="tiles" id="med-tiles"></div>
+        <div class="g2 mb14">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Risk Level Distribution</div></div>
+            <div class="chart-wrap ch-md"><canvas id="ch-med-risk"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Risk Score Breakdown</div></div>
+            <div id="med-bars"></div>
+          </div>
+        </div>
+        <div class="g3 mb14">
+          <div class="card"><div class="card-head"><div class="card-title">Age Distribution</div></div><div class="chart-wrap ch-sm"><canvas id="ch-med-age"></canvas></div></div>
+          <div class="card"><div class="card-head"><div class="card-title">BMI vs Risk Score</div></div><div class="chart-wrap ch-sm"><canvas id="ch-med-bmi"></canvas></div></div>
+          <div class="card"><div class="card-head"><div class="card-title">Diagnoses (Top 8)</div></div><div class="chart-wrap ch-sm"><canvas id="ch-med-dx"></canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Patient Risk Registry</div><button class="btn btn-ghost btn-sm" onclick="sortMed()">Sort by Risk ↓</button></div>
+          <div class="tbl-wrap" style="max-height:300px">
+            <table class="tbl"><thead><tr><th>Patient ID</th><th>Age</th><th>Gender</th><th>Diagnosis</th><th>BMI</th><th>Sys BP</th><th>Glucose</th><th>Cholesterol</th><th>Smoker</th><th>Risk Score</th><th>Level</th></tr></thead><tbody id="med-tbl-body"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ ARCHAEOLOGY ══════ -->
+    <div id="pg-archaeology" class="page">
+      <div class="page-hdr"><h1 class="page-title">Archaeology <em>Analysis</em></h1><p class="page-desc" style="color:var(--arch)">Artifact classification · Site distribution · Temporal patterns · Spatial analysis</p></div>
+      <div id="arch-gate"></div>
+      <div id="arch-body" style="display:none">
+        <div class="tiles" id="arch-tiles"></div>
+        <div class="g2 mb14">
+          <div class="card"><div class="card-head"><div class="card-title">Artifact Categories</div></div><div class="chart-wrap ch-md"><canvas id="ch-arch-cat"></canvas></div></div>
+          <div class="card"><div class="card-head"><div class="card-title">Distribution by Site</div></div><div class="chart-wrap ch-md"><canvas id="ch-arch-site"></canvas></div></div>
+        </div>
+        <div class="g2 mb14">
+          <div class="card"><div class="card-head"><div class="card-title">Period Timeline</div></div><div class="chart-wrap ch-md"><canvas id="ch-arch-period"></canvas></div></div>
+          <div class="card"><div class="card-head"><div class="card-title">Depth vs Weight</div></div><div class="chart-wrap ch-md"><canvas id="ch-arch-dw"></canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Artifact Registry</div></div>
+          <div class="tbl-wrap" style="max-height:300px">
+            <table class="tbl"><thead><tr><th>ID</th><th>Site</th><th>Category</th><th>Material</th><th>Period</th><th>Length (cm)</th><th>Weight (g)</th><th>Depth (m)</th><th>Condition</th><th>Classification</th></tr></thead><tbody id="arch-tbl-body"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ CHARTS ══════ -->
+    <div id="pg-charts" class="page">
+      <div class="page-hdr"><h1 class="page-title">Charts &amp; <em>Graphs</em></h1><p class="page-desc">Build any chart — histogram, bar, line, scatter, pie, box plot, area</p></div>
+      <div id="charts-gate"></div>
+      <div id="charts-body" style="display:none">
+        <div class="card mb14">
+          <div class="g3">
+            <div class="field"><label>Chart Type</label>
+              <select class="inp" id="chart-type" onchange="renderCustomChart()">
+                <option>Histogram</option><option>Bar Chart</option><option>Horizontal Bar</option>
+                <option>Line Chart</option><option>Area Chart</option><option>Scatter Plot</option>
+                <option>Pie Chart</option><option>Doughnut</option><option>Box Plot (approx.)</option>
+              </select></div>
+            <div class="field"><label>Primary Variable (X)</label><select class="inp" id="chart-vx" onchange="renderCustomChart()"></select></div>
+            <div class="field" id="chart-vy-wrap"><label>Secondary Variable (Y)</label><select class="inp" id="chart-vy" onchange="renderCustomChart()"></select></div>
+          </div>
+        </div>
+        <div class="card"><div class="chart-wrap ch-xl"><canvas id="ch-custom"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- ══════ REPORT ══════ -->
+    <div id="pg-report" class="page">
+      <div class="page-hdr"><h1 class="page-title">Export <em>Report</em></h1><p class="page-desc">Generate a comprehensive analysis report — download as HTML (PDF via DomPDF in production PHP)</p></div>
+      <div class="g2">
+        <div class="card">
+          <div class="card-title mb12">Report Settings</div>
+          <div class="field"><label>Report Title</label><input type="text" class="inp" id="rpt-title" value="StatIQ Analysis Report"></div>
+          <div class="field"><label>Author</label><input type="text" class="inp" id="rpt-author" value="Statistical Analyst"></div>
+          <div class="field"><label>Organization</label><input type="text" class="inp" id="rpt-org" value="Research Department"></div>
+          <div class="field"><label>Include Sections</label>
+            <div style="display:flex;flex-direction:column;gap:7px;margin-top:4px">
+              <label class="flex" style="cursor:pointer;font-size:12px;color:var(--text-body)"><input type="checkbox" id="rpt-s1" checked style="margin-right:4px"> Dataset Overview &amp; Variable Summary</label>
+              <label class="flex" style="cursor:pointer;font-size:12px;color:var(--text-body)"><input type="checkbox" id="rpt-s2" checked style="margin-right:4px"> Descriptive Statistics (all variables)</label>
+              <label class="flex" style="cursor:pointer;font-size:12px;color:var(--text-body)"><input type="checkbox" id="rpt-s3" checked style="margin-right:4px"> Correlation Matrix</label>
+              <label class="flex" style="cursor:pointer;font-size:12px;color:var(--text-body)"><input type="checkbox" id="rpt-s4" checked style="margin-right:4px"> AI-Generated Insights</label>
+              <label class="flex" style="cursor:pointer;font-size:12px;color:var(--text-body)"><input type="checkbox" id="rpt-s5" style="margin-right:4px"> Frequency Tables</label>
+              <label class="flex" style="cursor:pointer;font-size:12px;color:var(--text-body)"><input type="checkbox" id="rpt-s6" style="margin-right:4px"> PHP Backend Architecture</label>
+            </div>
+          </div>
+          <button class="btn btn-primary fw mt12" onclick="genReport()">Download Report</button>
+          <div class="insight ins-blue mt12" style="font-size:11px">
+            <div class="insight-title">Production PHP → PDF</div>
+            <div class="insight-body">In Laravel: <code class="c">POST /api/v1/reports/generate</code> dispatches a queue job. <strong>DomPDF</strong> renders the HTML template as a PDF. Charts captured as base64 images from Chart.js canvas.</div>
+          </div>
+        </div>
+        <div class="card"><div class="card-title mb12">Preview</div><div id="rpt-preview" style="font-size:12px;color:var(--text-muted)">Configure and generate report</div></div>
+      </div>
+    </div>
+
+  </div><!-- /content-area -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<div id="toast-container"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════ */
+const S = {
+  data:null, cols:[], nums:[], cats:[], rows:0,
+  module:'none', name:'No dataset', charts:{}, sortDir:1
+};
+const PAL = ['#4d85ff','#22c97e','#f0b429','#9d7cf0','#f0614c','#19c5e4','#fb923c','#e879f9','#4ade80','#facc15','#38bdf8','#a78bfa'];
+
+/* ══════════════════════════════════════════════════════
+   THEME
+══════════════════════════════════════════════════════ */
+function toggleTheme(){
+  const html=document.documentElement;
+  const next=html.getAttribute('data-theme')==='dark'?'light':'dark';
+  html.setAttribute('data-theme',next);
+  document.getElementById('theme-label').textContent=next==='dark'?'🌙':'☀️';
+  // Refresh all active charts for new theme colors
+  Object.values(S.charts).forEach(c=>c.update());
+  toast(next==='light'?'Light mode enabled':'Dark mode enabled','info');
+}
+
+/* ══════════════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════════════ */
+const PM={
+  home:['Home Dashboard','Statistical Analysis Platform'],
+  dataview:['Data View','Editable spreadsheet editor'],
+  import:['Import / Enter Data','Upload file, paste CSV, or manual entry'],
+  descriptive:['Frequencies & Descriptive Statistics','Summary stats for all variables'],
+  crosstabs:['Crosstabs & Chi-Square','Cross-tabulation with significance tests'],
+  compare:['Compare Means','T-tests for group comparisons'],
+  anova:['One-Way ANOVA','Analysis of variance across groups'],
+  nonparam:['Non-Parametric Tests','Mann-Whitney, Wilcoxon, Kruskal-Wallis'],
+  regression:['Regression Analysis','Linear and multiple regression models'],
+  correlation:['Correlation Matrix','Pearson, Spearman correlations'],
+  factor:['Factor Analysis (PCA)','Principal Component Analysis'],
+  medical:['Medical Analysis Module','Patient risk scoring and health analytics'],
+  archaeology:['Archaeology Module','Artifact classification and site analytics'],
+  charts:['Charts & Graphs','Custom visualisations'],
+  report:['Export Report','Generate analysis report']
+};
+function goPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pg-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b=>{if(b.getAttribute('onclick')===`goPage('${id}')`)b.classList.add('active');});
+  const m=PM[id]||[id,''];
+  document.getElementById('tb-title').textContent=m[0];
+  document.getElementById('tb-sub').textContent=m[1];
+  if(S.data){
+    if(id==='descriptive')renderDesc();
+    if(id==='correlation')renderCorr();
+    if(id==='regression')renderReg();
+    if(id==='crosstabs')renderCT();
+    if(id==='compare')renderCmp();
+    if(id==='anova')renderAnova();
+    if(id==='nonparam')renderNP();
+    if(id==='factor')renderFA();
+    if(id==='medical')renderMed();
+    if(id==='archaeology')renderArch();
+    if(id==='charts')renderChartBuilder();
+    if(id==='dataview')renderDG();
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════════════ */
+function toast(msg,type='ok',dur=3200){
+  const w=document.getElementById('toast-container');
+  const t=document.createElement('div');
+  const ico={ok:'✓',err:'✕',info:'ℹ'}[type]||'ℹ';
+  t.className=`toast toast-${type}`;
+  t.innerHTML=`<span class="toast-ico">${ico}</span><span>${msg}</span>`;
+  w.appendChild(t);
+  setTimeout(()=>t.style.opacity='0',dur-300);
+  setTimeout(()=>t.remove(),dur);
+}
+
+/* ══════════════════════════════════════════════════════
+   CHART HELPERS
+══════════════════════════════════════════════════════ */
+function mkChart(id,cfg){
+  if(S.charts[id]){S.charts[id].destroy();delete S.charts[id];}
+  const el=document.getElementById(id);if(!el)return;
+  // Theme-aware defaults
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  const gridCol=isDark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.05)';
+  const tickCol=isDark?'#4e5568':'#8b93ad';
+  const legendCol=isDark?'#9ba3b8':'#4a5270';
+  const defaults={
+    plugins:{legend:{labels:{color:legendCol,font:{family:'IBM Plex Mono',size:10.5},boxWidth:10,padding:10}}},
+    scales:{
+      x:{ticks:{color:tickCol,font:{family:'IBM Plex Mono',size:9.5},maxRotation:35},grid:{color:gridCol},border:{color:'transparent'}},
+      y:{ticks:{color:tickCol,font:{family:'IBM Plex Mono',size:9.5}},grid:{color:gridCol},border:{color:'transparent'}}
+    }
+  };
+  // Deep merge scales/plugins
+  if(cfg.options){
+    cfg.options=mergeDeep(defaults,cfg.options);
+  } else { cfg.options=defaults; }
+  S.charts[id]=new Chart(el,cfg);
+  return S.charts[id];
+}
+function mergeDeep(t,s){const o={...t};for(const k in s){o[k]=s[k]&&typeof s[k]==='object'&&!Array.isArray(s[k])?mergeDeep(t[k]||{},s[k]):s[k];}return o;}
+
+/* ══════════════════════════════════════════════════════
+   STATS ENGINE
+══════════════════════════════════════════════════════ */
+const Stat={
+  mean:a=>a.reduce((s,v)=>s+v,0)/a.length,
+  median:a=>{const s=[...a].sort((x,y)=>x-y);const m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2;},
+  variance:a=>{const m=Stat.mean(a);return a.reduce((s,v)=>s+(v-m)**2,0)/(a.length-1);},
+  sd:a=>Math.sqrt(Stat.variance(a)),
+  skew:a=>{const m=Stat.mean(a),s=Stat.sd(a),n=a.length;if(!s)return 0;return n/((n-1)*(n-2))*a.reduce((t,v)=>t+((v-m)/s)**3,0);},
+  kurt:a=>{const m=Stat.mean(a),s=Stat.sd(a),n=a.length;if(!s)return 0;const k=a.reduce((t,v)=>t+((v-m)/s)**4,0);return (n*(n+1))/((n-1)*(n-2)*(n-3))*k-3*(n-1)**2/((n-2)*(n-3));},
+  pearson:(x,y)=>{const mx=Stat.mean(x),my=Stat.mean(y);let num=0,dx=0,dy=0;for(let i=0;i<x.length;i++){num+=(x[i]-mx)*(y[i]-my);dx+=(x[i]-mx)**2;dy+=(y[i]-my)**2;}return dx&&dy?num/Math.sqrt(dx*dy):0;},
+  spearman:(x,y)=>Stat.pearson(rank(x),rank(y)),
+  linReg:(x,y)=>{
+    const n=x.length,mx=Stat.mean(x),my=Stat.mean(y);
+    let sxy=0,sxx=0;for(let i=0;i<n;i++){sxy+=(x[i]-mx)*(y[i]-my);sxx+=(x[i]-mx)**2;}
+    const slope=sxx?sxy/sxx:0,intercept=my-slope*mx;
+    const yh=x.map(v=>slope*v+intercept);
+    const ssr=y.reduce((s,v,i)=>s+(v-yh[i])**2,0),sst=y.reduce((s,v)=>s+(v-Stat.mean(y))**2,0);
+    const r2=sst?1-ssr/sst:0,se=Math.sqrt(ssr/Math.max(n-2,1)),ses=sxx?se/Math.sqrt(sxx):0,ts=ses?slope/ses:0;
+    return {slope,intercept,r2,yh,se,ses,ts,ps:2*(1-ncdf(Math.abs(ts))),adj_r2:1-(1-r2)*(n-1)/Math.max(n-2,1)};
+  },
+  multiReg:(Y,Xs)=>{
+    const n=Y.length,p=Xs.length;
+    const X=Y.map((_,i)=>[1,...Xs.map(c=>c[i])]);
+    function mm(A,B){return A.map(r=>B[0].map((_,j)=>r.reduce((s,v,k)=>s+v*B[k][j],0)));}
+    function inv(m){
+      const n=m.length,a=m.map(r=>[...r]),I=Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>+(i===j)));
+      for(let c=0;c<n;c++){let mx=c;for(let r=c+1;r<n;r++)if(Math.abs(a[r][c])>Math.abs(a[mx][c]))mx=r;[a[c],a[mx]]=[a[mx],a[c]];[I[c],I[mx]]=[I[mx],I[c]];const d=a[c][c];if(!d)continue;for(let j=0;j<n;j++){a[c][j]/=d;I[c][j]/=d;}for(let r=0;r<n;r++)if(r!==c){const f=a[r][c];for(let j=0;j<n;j++){a[r][j]-=f*a[c][j];I[r][j]-=f*I[c][j];}}}return I;
+    }
+    const Xt=X[0].map((_,i)=>X.map(r=>r[i]));
+    const beta=mm(mm(inv(mm(Xt,X)),Xt),Y.map(v=>[v])).map(r=>r[0]);
+    const yh=X.map(row=>row.reduce((s,v,i)=>s+v*beta[i],0));
+    const ssr=Y.reduce((s,v,i)=>s+(v-yh[i])**2,0),sst=Y.reduce((s,v)=>s+(v-Stat.mean(Y))**2,0);
+    const r2=sst?1-ssr/sst:0;
+    return {beta,r2,adj_r2:1-(1-r2)*(n-1)/Math.max(n-p-1,1),yh};
+  },
+  t1:(a,mu=0)=>{const n=a.length,m=Stat.mean(a),s=Stat.sd(a),t=(m-mu)/(s/Math.sqrt(n));return {t,df:n-1,mean:m,sd:s,n,se:s/Math.sqrt(n),p:2*(1-ncdf(Math.abs(t))),cd:(m-mu)/s};},
+  t2:(a,b)=>{
+    const na=a.length,nb=b.length,ma=Stat.mean(a),mb=Stat.mean(b),va=Stat.variance(a),vb=Stat.variance(b);
+    const t=(ma-mb)/Math.sqrt(va/na+vb/nb),df=(va/na+vb/nb)**2/((va/na)**2/(na-1)+(vb/nb)**2/(nb-1));
+    return {t,df:Math.floor(df),ma,mb,sa:Stat.sd(a),sb:Stat.sd(b),na,nb,p:2*(1-ncdf(Math.abs(t))),cd:Math.abs(ma-mb)/Math.sqrt((va+vb)/2)};
+  },
+  tp:(a,b)=>{const d=a.map((v,i)=>v-b[i]);return {...Stat.t1(d)};},
+  anova:(gps)=>{
+    const all=gps.flat(),N=all.length,k=gps.length,gm=Stat.mean(all);
+    const ssB=gps.reduce((s,g)=>s+g.length*(Stat.mean(g)-gm)**2,0);
+    const ssW=gps.reduce((s,g)=>s+g.reduce((t,v)=>t+(v-Stat.mean(g))**2,0),0);
+    const dfB=k-1,dfW=N-k,msB=ssB/dfB,msW=ssW/dfW,F=msB/msW;
+    return {F,dfB,dfW,msB,msW,ssB,ssW,eta2:ssB/(ssB+ssW),p:1-fDist(F,dfB,dfW)};
+  },
+  mw:(a,b)=>{const n1=a.length,n2=b.length;let u1=0,u2=0;for(const x of a)for(const y of b){if(x>y)u1++;else if(x<y)u2++;}const U=Math.min(u1,u2),mu=n1*n2/2,sig=Math.sqrt(n1*n2*(n1+n2+1)/12),z=(U-mu)/(sig||1);return {U,u1,u2,n1,n2,z,p:2*(1-ncdf(Math.abs(z)))};},
+  wx:(a,b)=>{const d=a.map((v,i)=>v-b[i]).filter(v=>v!==0),n=d.length;const ranked=d.map((v,i)=>({v,i,a:Math.abs(v)})).sort((a,b)=>a.a-b.a);ranked.forEach((r,i)=>r.rk=i+1);const W=ranked.filter(r=>r.v>0).reduce((s,r)=>s+r.rk,0),mu=n*(n+1)/4,sig=Math.sqrt(n*(n+1)*(2*n+1)/24),z=(W-mu)/(sig||1);return {W,n,z,p:2*(1-ncdf(Math.abs(z)))};},
+  kw:(gps)=>{const all=gps.flatMap((g,gi)=>g.map(v=>({v,gi})));all.sort((a,b)=>a.v-b.v);all.forEach((r,i)=>r.rk=i+1);const N=all.length,H=12/(N*(N+1))*gps.reduce((s,_,gi)=>{const gr=all.filter(r=>r.gi===gi),rm=gr.reduce((t,r)=>t+r.rk,0)/gr.length;return s+gr.length*rm**2;},0)-3*(N+1),df=gps.length-1;return {H,df,p:1-chiCdf(H,df)};},
+  chiGOF:(arr)=>{const freq={};arr.forEach(v=>{freq[v]=(freq[v]||0)+1;});const n=arr.length,k=Object.keys(freq).length,exp=n/k,chi=Object.values(freq).reduce((s,o)=>s+(o-exp)**2/exp,0);return {chi,df:k-1,freq,exp,p:1-chiCdf(chi,k-1)};},
+  pca:(data)=>{
+    const k=data[0].length;
+    const means=data[0].map((_,j)=>Stat.mean(data.map(r=>r[j])));
+    const sds=data[0].map((_,j)=>Stat.sd(data.map(r=>r[j]))||1);
+    const Z=data.map(r=>r.map((v,j)=>(v-means[j])/sds[j]));
+    const C=Array.from({length:k},(_,i)=>Array.from({length:k},(_,j)=>Stat.pearson(Z.map(r=>r[i]),Z.map(r=>r[j]))));
+    function pwr(M,n=300){let v=Array.from({length:M.length},()=>Math.random()-.5);for(let i=0;i<n;i++){const Mv=M.map(row=>row.reduce((s,c,j)=>s+c*v[j],0));const nm=Math.sqrt(Mv.reduce((s,x)=>s+x*x,0));v=Mv.map(x=>x/nm);}const l=M.map(row=>row.reduce((s,c,j)=>s+c*v[j],0)).reduce((s,x,i)=>s+x*v[i],0);return {ev:v,l};}
+    const {ev:e1,l:l1}=pwr(C);
+    const C2=C.map((row,i)=>row.map((c,j)=>c-l1*e1[i]*e1[j]));
+    const {ev:e2,l:l2}=pwr(C2);
+    return {comps:[e1,e2],evals:[l1,l2],varExp:[l1/k*100,l2/k*100]};
+  }
+};
+
+function rank(arr){const n=arr.length,idx=arr.map((v,i)=>({v,i})).sort((a,b)=>a.v-b.v),r=new Array(n);idx.forEach((item,ri)=>r[item.i]=ri+1);return r;}
+function ncdf(z){const a=[.254829592,-.284496736,1.421413741,-1.453152027,1.061405429],p=.3275911,s=z<0?-1:1;z=Math.abs(z)/Math.sqrt(2);const t=1/(1+p*z);return .5*(1+s*(1-(((((a[4]*t+a[3])*t)+a[2])*t+a[1])*t+a[0])*t*Math.exp(-z*z)));}
+function chiCdf(x,df){let p=0,t=Math.exp(-x/2);if(df%2===0){let term=t;p=term;for(let k=1;k<df/2;k++){term*=x/(2*k);p+=term;}}else{p=2*(1-ncdf(Math.sqrt(x)));}return Math.min(p,1);}
+function fDist(f,d1,d2){const x=d1*f/(d1*f+d2);return betaI(x,d1/2,d2/2);}
+function betaI(x,a,b){let s=0,t=1;for(let n=0;n<200;n++){t*=n?x*(a+b+n-1)/((a+n)*n):Math.pow(x,a)*Math.pow(1-x,b)/a;s+=t;if(Math.abs(t)<1e-12)break;}return Math.min(s,1);}
+
+/* ══════════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════════ */
+const f=(v,d=3)=>typeof v==='number'?isNaN(v)?'—':+v.toFixed(d):String(v??'—');
+const pv=(p)=>{if(p<0.001)return '<0.001***';if(p<0.01)return f(p,3)+'**';if(p<0.05)return f(p,3)+'*';return f(p,3);};
+const sigBd=(p)=>p<0.001?'bd-red':p<0.01?'bd-purple':p<0.05?'bd-blue':'bd-gray';
+function gnum(col){return S.data.map(r=>{const v=parseFloat(r[col]);return isNaN(v)?null:v;}).filter(v=>v!==null);}
+function gcat(col){return S.data.map(r=>String(r[col]||'')).filter(v=>v&&v!=='null');}
+function hist(data,bins=12){
+  const mn=Math.min(...data),mx=Math.max(...data),w=(mx-mn)||1,bw=w/bins;
+  const edges=Array.from({length:bins},(_,i)=>mn+i*bw),counts=new Array(bins).fill(0);
+  data.forEach(v=>{let b=Math.min(Math.floor((v-mn)/bw),bins-1);counts[b]++;});
+  return {labels:edges.map(e=>f(e,1)),counts};
+}
+function ftable(arr){
+  const m={};arr.forEach(v=>{m[v]=(m[v]||0)+1;});
+  const sorted=Object.entries(m).sort((a,b)=>b[1]-a[1]),total=arr.length;let cum=0;
+  return sorted.map(([k,n])=>{cum+=n;return {val:k,n,pct:n/total*100,cum:cum/total*100};});
+}
+function needData(gId,bId,msg=''){
+  if(!S.data){
+    document.getElementById(gId).innerHTML=`<div class="empty"><span class="empty-ico">📊</span><div class="empty-title">No dataset loaded</div><div class="empty-sub">Go to Import / Enter Data or use a sample dataset</div><div class="flex" style="justify-content:center;gap:10px"><button class="btn btn-primary" onclick="loadSample('medical')">⚕ Medical Sample</button><button class="btn" onclick="loadSample('arch')">⚱ Archaeology Sample</button></div></div>`;
+    document.getElementById(bId).style.display='none';return false;
+  }
+  document.getElementById(gId).innerHTML='';
+  document.getElementById(bId).style.display='block';return true;
+}
+function rtable(rows){return `<table class="tbl"><thead><tr><th>Parameter</th><th>Value</th></tr></thead><tbody>${rows.map(([k,v])=>`<tr><td>${k}</td><td class="mono">${v}</td></tr>`).join('')}</tbody></table>`;}
+function resCard(rows,p,alpha,label=''){const sig=p<alpha;return `${rtable(rows)}<div class="insight ${sig?'ins-red':'ins-green'} mt12"><div class="insight-title">${sig?'Reject H₀ — Significant result':'Fail to reject H₀ — Not significant'}${label?' ('+label+')':''} at α = ${alpha}</div><div class="insight-body">p = ${f(p,5)} ${sig?`< α (${alpha}) — statistically significant result`:`≥ α (${alpha}) — result is not significant`}. ${sig?'Strong evidence against the null hypothesis.':'Insufficient evidence to reject the null hypothesis.'}</div></div>`;}
+function copyTbl(id){const t=document.getElementById(id);if(!t)return;const rows=[...t.querySelectorAll('tr')].map(r=>[...r.querySelectorAll('th,td')].map(c=>c.textContent).join('\t'));navigator.clipboard?.writeText(rows.join('\n'));toast('Table copied to clipboard','ok');}
+
+/* ══════════════════════════════════════════════════════
+   SAMPLE DATA GENERATORS
+══════════════════════════════════════════════════════ */
+function loadSample(type){
+  S.data=type==='medical'?genMed():genArch();
+  S.cols=Object.keys(S.data[0]);
+  S.nums=S.cols.filter(c=>typeof S.data[0][c]==='number');
+  S.cats=S.cols.filter(c=>typeof S.data[0][c]==='string');
+  S.rows=S.data.length;
+  S.module=type==='medical'?'medical':'archaeology';
+  S.name=type==='medical'?'Medical Patients':'Archaeology Artifacts';
+  syncUI();
+  toast(`${S.name} loaded — ${S.rows} records, ${S.cols.length} variables`,'ok');
+  buildInsights();
+  goPage('home');
+}
+
+function genMed(){
+  const dx=['E11','I10','J00','I25','K21','E78','M79','J06','N18','I50','E14','Z13'];
+  return Array.from({length:120},(_,i)=>{
+    const age=22+Math.floor(Math.random()*58),smoker=Math.random()>.7?1:0,diabetic=Math.random()>.72?1:0;
+    const bmi=+(17+Math.random()*23).toFixed(1),sbp=Math.floor(98+(Math.random()*78)+(age>55?14:0)+(smoker?9:0));
+    const dbp=Math.floor(58+(Math.random()*32)),glucose=Math.floor(68+(Math.random()*85)+(diabetic?42:0));
+    const chol=Math.floor(140+(Math.random()*125));
+    let risk=0;if(age>65)risk+=20;if(bmi>30)risk+=15;if(sbp>140)risk+=20;if(glucose>126)risk+=20;if(smoker)risk+=15;if(diabetic)risk+=10;if(chol>240)risk+=10;
+    risk=Math.min(risk,100);
+    return {patient_id:'P'+String(i+1).padStart(3,'0'),age,gender:i%2?'M':'F',diagnosis:dx[Math.floor(Math.random()*dx.length)],systolic_bp:sbp,diastolic_bp:dbp,glucose,bmi,cholesterol:chol,smoker,diabetic,risk_score:risk,risk_level:risk>=75?'critical':risk>=50?'high':risk>=25?'medium':'low'};
+  });
+}
+function genArch(){
+  const sites=['Tell Abyad','Jericho East','Petra North','Luxor B','Ephesus G3','Pompeii 7','Troy VI'];
+  const cats=['ceramic','lithic','bone','coin','jewelry','glass','textile','metal','ivory'];
+  const periods=['Neolithic','Chalcolithic','Bronze Age','Iron Age','Classical','Hellenistic','Roman','Byzantine'];
+  const mats=['clay','flint','bone','copper','gold','silver','glass','linen','iron','ivory'];
+  const conds=['excellent','good','fair','poor','fragment'];
+  return Array.from({length:90},(_,i)=>{
+    const cat=cats[Math.floor(Math.random()*cats.length)],mat=mats[Math.floor(Math.random()*mats.length)],per=periods[Math.floor(Math.random()*periods.length)];
+    let cls='Unclassified';
+    if(cat==='coin')cls='Currency/Numismatics';else if(cat==='ceramic')cls='Ceramic Vessel';else if(cat==='lithic')cls='Lithic Tool';else if(cat==='bone')cls='Organic Remains';else if(cat==='jewelry'||mat==='gold'||mat==='silver')cls='Personal Ornament';else if(cat==='metal')cls='Metalwork';
+    return {artifact_id:'A'+String(i+1).padStart(3,'0'),site:sites[Math.floor(Math.random()*sites.length)],excavation_year:2015+Math.floor(Math.random()*10),category:cat,material:mat,period:per,length_cm:+(1+Math.random()*46).toFixed(1),weight_g:+(2+Math.random()*620).toFixed(1),depth_m:+(0.1+Math.random()*4.1).toFixed(2),condition:conds[Math.floor(Math.random()*conds.length)],classification:cls};
+  });
+}
+
+function syncUI(){
+  document.getElementById('nb-rows').textContent=S.rows;
+  document.getElementById('ds-led').className='ds-led on';
+  document.getElementById('ds-name').textContent=S.name;
+  document.getElementById('ds-meta').textContent=`${S.rows} rows · ${S.cols.length} cols`;
+  const tiles=document.getElementById('home-tiles');
+  tiles.querySelectorAll('.tile-stripe').forEach(e=>e.remove());
+  document.getElementById('h-rows').textContent=S.rows;
+  document.getElementById('h-cols').textContent=S.cols.length;
+  document.getElementById('h-types').textContent=`${S.nums.length} numeric, ${S.cats.length} categorical`;
+  const nulls=S.data.reduce((a,r)=>a+S.cols.filter(c=>r[c]===null||r[c]===''||r[c]===undefined).length,0);
+  const comp=Math.round((1-nulls/(S.rows*S.cols.length))*100);
+  document.getElementById('h-comp').innerHTML=`${comp}<small>%</small>`;
+  document.getElementById('h-miss').textContent=nulls?`${nulls} missing cells`:'No missing values';
+  document.getElementById('h-miss').className='tile-note '+(nulls?'neg':'pos');
+  document.getElementById('h-mod').textContent=S.module==='medical'?'Medical':S.module==='archaeology'?'Archaeology':'General';
+  document.getElementById('home-empty').style.display='none';
+  document.getElementById('home-data').style.display='block';
+  // Var list
+  const vl=document.getElementById('home-vars');
+  vl.innerHTML=S.cols.map(c=>{
+    const t=typeof S.data[0][c];const tc=t==='number'?'vt-n':'vt-c';const tl=t==='number'?'N':'C';
+    const extra=t==='number'?`μ=${f(Stat.mean(gnum(c)),2)}`:`${[...new Set(gcat(c))].length} vals`;
+    return `<div class="var-item"><div class="vtype ${tc}">${tl}</div><span class="vname">${c}</span><span class="vmeta">${extra}</span></div>`;
+  }).join('');
+  // Preview
+  const ph=document.getElementById('prev-head'),pb=document.getElementById('prev-body');
+  ph.innerHTML='<tr>'+S.cols.map(c=>`<th>${c}</th>`).join('')+'</tr>';
+  pb.innerHTML=S.data.slice(0,10).map(r=>'<tr>'+S.cols.map(c=>`<td>${r[c]??'—'}</td>`).join('')+'</tr>').join('');
+  // Quick plot var select
+  const hs=document.getElementById('hvar-sel');
+  hs.innerHTML=S.nums.map(c=>`<option>${c}</option>`).join('');
+  homeQuickPlot();
+}
+
+function homeQuickPlot(){
+  const col=document.getElementById('hvar-sel').value;if(!col)return;
+  const vals=gnum(col);const {labels,counts}=hist(vals);
+  mkChart('ch-home',{type:'bar',data:{labels,datasets:[{label:col,data:counts,backgroundColor:'rgba(77,133,255,0.45)',borderColor:'#4d85ff',borderWidth:1,borderRadius:4}]},options:{plugins:{legend:{display:false}}}});
+}
+
+function buildInsights(){
+  if(!S.data)return;
+  const list=document.getElementById('insights-list');const ins=[];
+  if(S.nums.length>=2){
+    const c1=S.nums[0],c2=S.nums[1],r=Stat.pearson(gnum(c1),gnum(c2));
+    const str=Math.abs(r)>.7?'strong':Math.abs(r)>.4?'moderate':'weak';
+    ins.push({c:`ins-${Math.abs(r)>.6?'blue':'green'}`,t:`${str.charAt(0).toUpperCase()+str.slice(1)} ${r>0?'positive':'negative'} correlation detected`,b:`${c1} and ${c2} have a ${str} ${r>0?'positive':'negative'} relationship (r = ${f(r,3)}). ${Math.abs(r)>.5?'Consider regression modelling.':''}`});
+  }
+  if(S.module==='medical'){
+    const rc=S.nums.find(c=>c.includes('risk'));
+    if(rc){const rv=gnum(rc),hi=rv.filter(v=>v>=50).length;ins.push({c:`ins-${hi/rv.length>.3?'red':'amber'}`,t:`${Math.round(hi/rv.length*100)}% of patients are high/critical risk`,b:`${hi} of ${rv.length} patients need immediate attention. Mean risk score: ${f(Stat.mean(rv),1)} (SD: ${f(Stat.sd(rv),1)}).`});}
+    const bc=S.nums.find(c=>c.includes('bmi'));
+    if(bc){const bv=gnum(bc),ob=bv.filter(v=>v>=30).length;ins.push({c:`ins-amber`,t:`Obesity rate: ${Math.round(ob/bv.length*100)}% (BMI ≥ 30)`,b:`${ob} patients classified as obese. Mean BMI: ${f(Stat.mean(bv),1)} ± ${f(Stat.sd(bv),1)}.`});}
+    const ac=S.nums.find(c=>c.includes('age'));
+    if(ac){const av=gnum(ac);ins.push({c:'ins-blue',t:`Population age profile`,b:`Mean age ${f(Stat.mean(av),1)} years (range ${Math.min(...av)}–${Math.max(...av)}). Skewness: ${f(Stat.skew(av),2)} — ${Math.abs(Stat.skew(av))<0.5?'approximately normal':'skewed distribution'}.`});}
+  }
+  if(S.module==='archaeology'){
+    const cc=S.cats.find(c=>c.includes('categ'));
+    if(cc){const ft=ftable(gcat(cc));ins.push({c:'ins-amber',t:`Dominant artifact: "${ft[0].val}" (${f(ft[0].pct,1)}%)`,b:`${ft[0].n} specimens out of ${S.rows}. ${ft.length} unique categories found across all excavation sites.`});}
+    const dc=S.nums.find(c=>c.includes('depth'));
+    if(dc){const dv=gnum(dc);ins.push({c:'ins-blue',t:`Stratified deposition: depth range ${f(Math.min(...dv),2)}–${f(Math.max(...dv),2)}m`,b:`Mean depth ${f(Stat.mean(dv),2)}m ± ${f(Stat.sd(dv),2)}m. Multiple archaeological occupation layers likely present.`});}
+    const pc=S.cats.find(c=>c.includes('period'));
+    if(pc){const pf=ftable(gcat(pc));ins.push({c:'ins-purple',t:`${pf.length} periods — dominant: "${pf[0].val}"`,b:`${pf[0].val} artifacts make up ${f(pf[0].pct,1)}% of the assemblage. Multi-period occupation confirmed.`});}
+  }
+  if(S.nums.length>2){
+    let best={r:0};
+    for(let i=0;i<Math.min(S.nums.length,5);i++)for(let j=i+1;j<Math.min(S.nums.length,5);j++){
+      const r=Stat.pearson(gnum(S.nums[i]),gnum(S.nums[j]));if(Math.abs(r)>Math.abs(best.r))best={r,c1:S.nums[i],c2:S.nums[j]};
+    }
+    if(best.c1)ins.push({c:'ins-purple',t:`Strongest correlation across all variables: r = ${f(best.r,3)}`,b:`${best.c1} ↔ ${best.c2} — ${Math.abs(best.r)>.7?'Strong predictive relationship. Regression model recommended.':'Moderate relationship worth investigating further.'}`});
+  }
+  list.innerHTML=ins.map(i=>`<div class="insight ${i.c}"><div class="insight-title">${i.t}</div><div class="insight-body">${i.b}</div></div>`).join('');
+}
+
+/* ══════════════════════════════════════════════════════
+   IMPORT
+══════════════════════════════════════════════════════ */
+function iTab(id,el){['file','paste','manual','samples'].forEach(t=>document.getElementById('itab-'+t).style.display='none');document.querySelectorAll('#pg-import .tab').forEach(b=>b.classList.remove('on'));document.getElementById('itab-'+id).style.display='block';el.classList.add('on');if(id==='manual')buildManualGrid();}
+function dzOver(e){e.preventDefault();document.getElementById('dz').classList.add('over');}
+function dzLeave(){document.getElementById('dz').classList.remove('over');}
+function dzDrop(e){e.preventDefault();dzLeave();const f=e.dataTransfer.files[0];if(f)processFile(f);}
+function fileSelected(e){processFile(e.target.files[0]);}
+function processFile(file){
+  const ext=file.name.split('.').pop().toLowerCase();
+  if(!['csv','tsv','txt','xlsx'].includes(ext)){toast('Unsupported file type','err');return;}
+  const st=document.getElementById('file-status');
+  st.innerHTML=`<div class="insight ins-blue">Reading <strong>${file.name}</strong>…</div>`;
+  if(['csv','tsv','txt'].includes(ext)){
+    const r=new FileReader();r.onload=e=>{try{parseCSV(e.target.result,file.name);st.innerHTML='';}catch(ex){st.innerHTML=`<div class="insight ins-red">${ex.message}</div>`;}};r.readAsText(file);
+  } else {
+    setTimeout(()=>{st.innerHTML=`<div class="insight ins-amber"><strong>.xlsx detected</strong> — PHP PhpSpreadsheet parses Excel server-side. Loading a similar sample.</div>`;
+    setTimeout(()=>{const t=file.name.toLowerCase().includes('med')?'medical':'arch';loadSample(t);st.innerHTML='';},900);},400);
+  }
+}
+function parseCSV(text,name='dataset'){
+  const lines=text.trim().split(/\r?\n/);const sep=lines[0].includes('\t')?'\t':',';
+  const headers=lines[0].split(sep).map(h=>h.trim().replace(/^"|"$/g,''));
+  const data=lines.slice(1).filter(l=>l.trim()).map(l=>{const vals=l.split(sep).map(v=>v.trim().replace(/^"|"$/g,''));const o={};headers.forEach((h,i)=>{const v=vals[i]??'';o[h]=v!==''&&!isNaN(v)?+v:v;});return o;});
+  if(!data.length)throw new Error('No data rows found');
+  setDataset(data,name);
+}
+function parsePaste(){try{parseCSV(document.getElementById('paste-area').value,'Pasted Data');}catch(e){toast(e.message,'err');}}
+function setDataset(data,name='Dataset'){
+  S.data=data;S.cols=Object.keys(data[0]);
+  S.nums=S.cols.filter(c=>typeof data[0][c]==='number');
+  S.cats=S.cols.filter(c=>typeof data[0][c]==='string');
+  S.rows=data.length;
+  const h=S.cols.map(c=>c.toLowerCase());
+  const ms=['patient','age','diagnosis','bmi','glucose','bp','clinical','symptom'].filter(k=>h.some(c=>c.includes(k))).length;
+  const as=['artifact','site','excavation','ceramic','lithic','period','stratum'].filter(k=>h.some(c=>c.includes(k))).length;
+  S.module=ms>=2?'medical':as>=2?'archaeology':'general';
+  S.name=name;syncUI();buildInsights();
+  toast(`${name} loaded — ${S.rows} rows, ${S.cols.length} columns`,'ok');
+  goPage('home');
+}
+
+/* ══════════════════════════════════════════════════════
+   MANUAL GRID
+══════════════════════════════════════════════════════ */
+function buildManualGrid(){
+  const r=Math.min(parseInt(document.getElementById('mr').value)||10,500);
+  const c=Math.min(parseInt(document.getElementById('mc').value)||6,30);
+  let h=`<thead><tr><th class="rn">#</th>`;
+  for(let i=0;i<c;i++)h+=`<th><input type="text" value="Variable_${i+1}"></th>`;
+  h+=`</tr></thead><tbody>`;
+  for(let i=0;i<r;i++){h+=`<tr><td class="rn">${i+1}</td>`;for(let j=0;j<c;j++)h+=`<td><input type="text" placeholder=""></td>`;h+=`</tr>`;}
+  document.getElementById('manual-grid').innerHTML=h;
+}
+function importManual(){
+  const t=document.querySelector('#manual-grid');if(!t){toast('Build grid first','err');return;}
+  const headers=[...t.querySelectorAll('thead th input')].map(i=>i.value.trim()||'Col'+Math.random().toString(36).slice(2,5));
+  const data=[...t.querySelectorAll('tbody tr')].map(row=>{
+    const cells=[...row.querySelectorAll('td input')];const o={};
+    cells.forEach((c,i)=>{const v=c.value.trim();o[headers[i]]=v!==''&&!isNaN(v)?+v:v;});return o;
+  }).filter(r=>Object.values(r).some(v=>v!==''&&v!==null));
+  if(!data.length){toast('No data entered','err');return;}
+  setDataset(data,'Manual Entry');
+}
+
+/* ══════════════════════════════════════════════════════
+   DATA GRID VIEW
+══════════════════════════════════════════════════════ */
+function renderDG(){
+  if(!S.data){document.getElementById('data-grid').innerHTML='<tr><td style="padding:40px;text-align:center;color:var(--text-muted)">No data loaded</td></tr>';return;}
+  let h=`<thead><tr><th class="rn">#</th>${S.cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`;
+  S.data.forEach((r,i)=>{h+=`<tr><td class="rn">${i+1}</td>${S.cols.map(c=>`<td><input type="text" value="${r[c]??''}" onchange="S.data[${i}]['${c}']=isNaN(this.value)||this.value===''?this.value:+this.value"></td>`).join('')}</tr>`;});
+  document.getElementById('data-grid').innerHTML=h+'</tbody>';
+}
+function sortByFirst(){const c=S.nums[0]||S.cols[0];S.data.sort((a,b)=>(a[c]-b[c])*S.sortDir);S.sortDir*=-1;renderDG();}
+function clearAll(){if(confirm('Clear all data?')){S.data=null;S.cols=[];S.nums=[];S.cats=[];S.rows=0;S.module='none';S.name='No dataset';document.getElementById('ds-led').className='ds-led';document.getElementById('ds-name').textContent='No dataset loaded';document.getElementById('ds-meta').textContent='Click to import data';document.getElementById('nb-rows').textContent='—';document.getElementById('home-empty').style.display='block';document.getElementById('home-data').style.display='none';goPage('import');toast('Data cleared','info');}}
+
+/* ══════════════════════════════════════════════════════
+   DESCRIPTIVE
+══════════════════════════════════════════════════════ */
+function renderDesc(){
+  if(!needData('desc-gate','desc-body'))return;
+  const gm=Stat.mean(S.nums.flatMap(c=>gnum(c)));
+  document.getElementById('desc-tiles').innerHTML=`
+    <div class="tile" style="--tile-c:var(--accent)"><div class="tile-ico">📊</div><div class="tile-label">Numeric Vars</div><div class="tile-val">${S.nums.length}</div></div>
+    <div class="tile" style="--tile-c:var(--purple)"><div class="tile-ico">🗂</div><div class="tile-label">Categorical Vars</div><div class="tile-val">${S.cats.length}</div></div>
+    <div class="tile" style="--tile-c:var(--green)"><div class="tile-ico">📐</div><div class="tile-label">Grand Mean</div><div class="tile-val" style="font-size:18px">${f(gm,3)}</div></div>
+    <div class="tile" style="--tile-c:var(--amber)"><div class="tile-ico">📏</div><div class="tile-label">Total Obs.</div><div class="tile-val">${S.rows}</div></div>`;
+  const ds=document.getElementById('desc-sel'),fs=document.getElementById('freq-sel');
+  ds.innerHTML=S.nums.map(c=>`<option>${c}</option>`).join('');
+  fs.innerHTML=S.cols.map(c=>`<option>${c}</option>`).join('');
+  descUpdate();buildFreq();
+  const tbody=document.getElementById('desc-all-body');
+  tbody.innerHTML=S.nums.map(c=>{
+    const v=gnum(c),miss=S.data.filter(r=>r[c]===null||r[c]===''||r[c]===undefined).length;
+    return `<tr><td>${c}</td><td><span class="badge bd-blue">Numeric</span></td><td>${v.length}</td><td class="mono">${f(Stat.mean(v),4)}</td><td class="mono">${f(Stat.median(v),4)}</td><td class="mono">${f(Stat.sd(v),4)}</td><td class="mono">${f(Stat.variance(v),4)}</td><td class="mono">${f(Math.min(...v),3)}</td><td class="mono">${f(Math.max(...v),3)}</td><td class="mono">${f(Math.max(...v)-Math.min(...v),3)}</td><td class="mono">${f(Stat.skew(v),4)}</td><td class="mono">${f(Stat.kurt(v),4)}</td><td class="mono">${f(Stat.sd(v)/Math.sqrt(v.length),4)}</td><td>${miss||'0'}</td></tr>`;
+  }).join('')+S.cats.map(c=>{
+    const vals=gcat(c),un=[...new Set(vals)].length,miss=S.data.filter(r=>!r[c]).length;
+    return `<tr><td>${c}</td><td><span class="badge bd-purple">Categorical</span></td><td>${vals.length}</td><td colspan="9" style="color:var(--text-muted)">${un} unique values</td><td>${miss||'0'}</td></tr>`;
+  }).join('');
+}
+function descUpdate(){
+  const col=document.getElementById('desc-sel').value;if(!col)return;
+  const v=gnum(col);const {labels,counts}=hist(v);
+  mkChart('ch-desc',{type:'bar',data:{labels,datasets:[{label:col,data:counts,backgroundColor:'rgba(77,133,255,0.45)',borderColor:'#4d85ff',borderWidth:1,borderRadius:4}]},options:{plugins:{legend:{display:false}}}});
+  const q1=([...v].sort((a,b)=>a-b)[Math.floor(v.length*.25)]),q3=([...v].sort((a,b)=>a-b)[Math.floor(v.length*.75)]);
+  document.getElementById('desc-stats-body').innerHTML=[
+    ['N (valid)',v.length],['Mean',f(Stat.mean(v),6)],['Median',f(Stat.median(v),6)],
+    ['Std Deviation',f(Stat.sd(v),6)],['Variance',f(Stat.variance(v),6)],
+    ['Std Error of Mean',f(Stat.sd(v)/Math.sqrt(v.length),6)],
+    ['95% CI Lower',f(Stat.mean(v)-1.96*Stat.sd(v)/Math.sqrt(v.length),4)],
+    ['95% CI Upper',f(Stat.mean(v)+1.96*Stat.sd(v)/Math.sqrt(v.length),4)],
+    ['Minimum',f(Math.min(...v),4)],['Maximum',f(Math.max(...v),4)],
+    ['Range',f(Math.max(...v)-Math.min(...v),4)],
+    ['25th Percentile (Q1)',f(q1,4)],['75th Percentile (Q3)',f(q3,4)],['IQR',f(q3-q1,4)],
+    ['Skewness',f(Stat.skew(v),6)],['Kurtosis (excess)',f(Stat.kurt(v),6)]
+  ].map(([k,val])=>`<tr><td>${k}</td><td class="mono">${val}</td></tr>`).join('');
+}
+function buildFreq(){
+  const col=document.getElementById('freq-sel').value;if(!col)return;
+  const ft=ftable(S.data.map(r=>r[col]));
+  document.getElementById('freq-body').innerHTML=ft.map(r=>`<tr><td>${r.val}</td><td class="mono">${r.n}</td><td class="mono">${f(r.pct,2)}%</td><td class="mono">${f(r.pct,2)}%</td><td class="mono">${f(r.cum,2)}%</td></tr>`).join('');
+}
+
+/* ══════════════════════════════════════════════════════
+   CROSSTABS
+══════════════════════════════════════════════════════ */
+function renderCT(){
+  if(!needData('ct-gate','ct-body'))return;
+  document.getElementById('ct-row').innerHTML=S.cols.map(c=>`<option>${c}</option>`).join('');
+  document.getElementById('ct-col').innerHTML=S.cols.slice(1).map(c=>`<option>${c}</option>`).join('');
+}
+function runCrosstabs(){
+  const rc=document.getElementById('ct-row').value,cc=document.getElementById('ct-col').value;
+  const rvs=[...new Set(S.data.map(r=>r[rc]))],cvs=[...new Set(S.data.map(r=>r[cc]))];
+  const m={};rvs.forEach(rv=>{m[rv]={};cvs.forEach(cv=>{m[rv][cv]=0;});});
+  S.data.forEach(r=>{if(m[r[rc]]&&cvs.includes(r[cc]))m[r[rc]][r[cc]]++;});
+  const rt={},ct={};rvs.forEach(rv=>rt[rv]=cvs.reduce((s,cv)=>s+m[rv][cv],0));
+  cvs.forEach(cv=>ct[cv]=rvs.reduce((s,rv)=>s+m[rv][cv],0));
+  const N=S.rows;let chi=0,df=(rvs.length-1)*(cvs.length-1);
+  rvs.forEach(rv=>cvs.forEach(cv=>{const e=rt[rv]*ct[cv]/N;if(e>0)chi+=(m[rv][cv]-e)**2/e;}));
+  const p=1-chiCdf(chi,df);
+  const cramersV=Math.sqrt(chi/(N*Math.min(rvs.length-1,cvs.length-1)));
+  let html=`<div class="card mb14"><div class="card-title mb12">Crosstabulation: <em>${rc}</em> × <em>${cc}</em></div>
+    <div class="tbl-wrap mb12"><table class="tbl"><thead><tr><th>${rc}/${cc}</th>${cvs.map(cv=>`<th>${cv}</th>`).join('')}<th>Total</th></tr></thead><tbody>
+    ${rvs.map(rv=>`<tr><td>${rv}</td>${cvs.map(cv=>`<td class="mono">${m[rv][cv]}</td>`).join('')}<td class="mono"><strong>${rt[rv]}</strong></td></tr>`).join('')}
+    <tr style="background:var(--bg-raised)"><td><strong>Total</strong></td>${cvs.map(cv=>`<td class="mono"><strong>${ct[cv]}</strong></td>`).join('')}<td class="mono"><strong>${N}</strong></td></tr>
+    </tbody></table></div>
+    <div class="result-block"><h4>Chi-Square Test of Independence</h4>${resCard([['χ² statistic',f(chi,4)],['df',df],['p-value',pv(p)],['N',N],["Cramer's V",f(cramersV,4)],['Phi coefficient',f(Math.sqrt(chi/N),4)]],p,0.05)}</div></div>`;
+  const out=document.getElementById('ct-out');out.innerHTML=html;out.style.display='block';
+}
+
+/* ══════════════════════════════════════════════════════
+   COMPARE MEANS
+══════════════════════════════════════════════════════ */
+function renderCmp(){
+  if(!needData('cmp-gate','cmp-body'))return;
+  ['t1-var','t2-v1','t2-v2','tp-v1','tp-v2'].forEach(id=>{const s=document.getElementById(id);if(s)s.innerHTML=S.nums.map(c=>`<option>${c}</option>`).join('');});
+}
+function cmpTab(id,el){['t1','t2','tp'].forEach(t=>document.getElementById('ct-'+t).style.display='none');document.querySelectorAll('#pg-compare .tab').forEach(b=>b.classList.remove('on'));document.getElementById('ct-'+id).style.display='block';el.classList.add('on');}
+function runT1(){
+  const col=document.getElementById('t1-var').value,mu=+document.getElementById('t1-mu').value,a=+document.getElementById('t1-a').value;
+  const {t,df,mean:m,sd,n,se,p,cd}=Stat.t1(gnum(col),mu);
+  document.getElementById('t1-out').innerHTML=`<div class="card-title mb12">One-Sample T-Test: ${col}</div>${resCard([['Variable',col],['Test Value (μ₀)',mu],['N',n],['Sample Mean',f(m,4)],['Std Deviation',f(sd,4)],['Std Error of Mean',f(se,4)],['95% CI Lower',f(m-1.96*se,4)],['95% CI Upper',f(m+1.96*se,4)],['t statistic',f(t,4)],['Degrees of Freedom',df],['p-value (2-tailed)',pv(p)],["Cohen's d",f(cd,4)]],p,a)}`;
+}
+function runT2(){
+  const c1=document.getElementById('t2-v1').value,c2=document.getElementById('t2-v2').value,a=+document.getElementById('t2-a').value;
+  const {t,df,ma,mb,sa,sb,na,nb,p,cd}=Stat.t2(gnum(c1),gnum(c2));
+  document.getElementById('t2-out').innerHTML=`<div class="card-title mb12">Independent Samples T-Test</div>${resCard([['Variable 1',c1],['Variable 2',c2],['Mean 1',f(ma,4)],['Mean 2',f(mb,4)],['Mean Difference',f(ma-mb,4)],['SD 1',f(sa,4)],['SD 2',f(sb,4)],['n1',na],['n2',nb],['t statistic',f(t,4)],['df (Welch)',df],['p-value (2-tailed)',pv(p)],["Cohen's d",f(cd,4)]],p,a)}`;
+}
+function runTP(){
+  const c1=document.getElementById('tp-v1').value,c2=document.getElementById('tp-v2').value;
+  const a1=gnum(c1),a2=gnum(c2),n=Math.min(a1.length,a2.length);
+  const {t,df,mean:m,sd,se,p}=Stat.tp(a1.slice(0,n),a2.slice(0,n));
+  document.getElementById('tp-out').innerHTML=`<div class="card-title mb12">Paired Samples T-Test</div>${resCard([['Variable 1 (Before)',c1],['Variable 2 (After)',c2],['N pairs',n],['Mean Difference',f(m,4)],['SD of Differences',f(sd,4)],['SE',f(se,4)],['t statistic',f(t,4)],['df',df],['p-value (2-tailed)',pv(p)]],p,0.05)}`;
+}
+
+/* ══════════════════════════════════════════════════════
+   ANOVA
+══════════════════════════════════════════════════════ */
+function renderAnova(){
+  if(!needData('anova-gate','anova-body'))return;
+  document.getElementById('av-dep').innerHTML=S.nums.map(c=>`<option>${c}</option>`).join('');
+  document.getElementById('av-fac').innerHTML=S.cats.map(c=>`<option>${c}</option>`).join('');
+}
+function runAnova(){
+  const dep=document.getElementById('av-dep').value,fac=document.getElementById('av-fac').value;
+  const gm={};S.data.forEach(r=>{if(!gm[r[fac]])gm[r[fac]]=[];gm[r[fac]].push(+r[dep]||0);});
+  const gks=Object.keys(gm),gvs=gks.map(k=>gm[k]);
+  const {F,dfB,dfW,msB,msW,ssB,ssW,eta2,p}=Stat.anova(gvs);
+  const omega2=(ssB-dfB*msW)/(ssB+ssW+msW);
+  document.getElementById('anova-out').innerHTML=`<div class="card-title mb12">One-Way ANOVA: ${dep} by ${fac}</div>
+    <table class="tbl mb12"><thead><tr><th>Source</th><th>SS</th><th>df</th><th>MS</th><th>F</th><th>p</th></tr></thead><tbody>
+    <tr><td>Between groups</td><td class="mono">${f(ssB,3)}</td><td>${dfB}</td><td class="mono">${f(msB,3)}</td><td class="mono"><strong>${f(F,4)}</strong></td><td class="mono"><span class="badge ${sigBd(p)}">${pv(p)}</span></td></tr>
+    <tr><td>Within groups (error)</td><td class="mono">${f(ssW,3)}</td><td>${dfW}</td><td class="mono">${f(msW,3)}</td><td colspan="2"></td></tr>
+    <tr style="background:var(--bg-raised)"><td><strong>Total</strong></td><td class="mono">${f(ssB+ssW,3)}</td><td>${dfB+dfW}</td><td colspan="3"></td></tr>
+    </tbody></table>
+    <div class="result-block"><h4>Effect Size & Group Means</h4>${rtable([['η² (Eta-squared)',f(eta2,4)],['ω² (Omega-squared)',f(omega2,4)],['Groups',gks.length],['Group Means',gks.map((k,i)=>`${k}: ${f(Stat.mean(gvs[i]),2)}`).join(' | ')]])}</div>
+    <div class="insight ${p<0.05?'ins-red':'ins-green'} mt12"><div class="insight-title">${p<0.05?'Significant group differences found':'No significant group differences'}</div><div class="insight-body">F(${dfB},${dfW}) = ${f(F,3)}, p = ${f(p,5)}. ${p<0.05?'Post-hoc tests (Tukey HSD) recommended to identify which pairs differ.':'Groups do not differ significantly on '+dep+'.'}</div></div>`;
+  document.getElementById('anova-chart-card').style.display='block';
+  mkChart('ch-anova',{type:'bar',data:{labels:gks,datasets:[{label:'Group Mean',data:gks.map((k,i)=>f(Stat.mean(gvs[i]),3)),backgroundColor:PAL.map(c=>c+'80'),borderColor:PAL,borderWidth:1.5,borderRadius:5}]},options:{plugins:{legend:{display:false}}}});
+}
+
+/* ══════════════════════════════════════════════════════
+   NON-PARAMETRIC
+══════════════════════════════════════════════════════ */
+function renderNP(){
+  if(!needData('np-gate','np-body'))return;
+  ['mw-v1','mw-v2','wx-v1','wx-v2','kw-dep'].forEach(id=>{const s=document.getElementById(id);if(s)s.innerHTML=S.nums.map(c=>`<option>${c}</option>`).join('');});
+  document.getElementById('chi-v').innerHTML=S.cols.map(c=>`<option>${c}</option>`).join('');
+  document.getElementById('kw-grp').innerHTML=S.cats.map(c=>`<option>${c}</option>`).join('');
+}
+function npTab(id,el){['mw','wx','kw','chi'].forEach(t=>document.getElementById('np-'+t).style.display='none');document.querySelectorAll('#pg-nonparam .tab').forEach(b=>b.classList.remove('on'));document.getElementById('np-'+id).style.display='block';el.classList.add('on');}
+function runMW(){
+  const c1=document.getElementById('mw-v1').value,c2=document.getElementById('mw-v2').value;
+  const {U,u1,u2,n1,n2,z,p}=Stat.mw(gnum(c1),gnum(c2));
+  document.getElementById('mw-out').innerHTML=`<div class="card-title mb12">Mann-Whitney U Test</div>${resCard([['Variable 1',c1],['Variable 2',c2],['U statistic',U],['U1',u1],['U2',u2],['n1',n1],['n2',n2],['z statistic',f(z,4)],['p-value (2-tailed)',pv(p)]],p,0.05)}`;
+}
+function runWX(){
+  const c1=document.getElementById('wx-v1').value,c2=document.getElementById('wx-v2').value;
+  const a1=gnum(c1),a2=gnum(c2),n=Math.min(a1.length,a2.length);
+  const {W,n:np,z,p}=Stat.wx(a1.slice(0,n),a2.slice(0,n));
+  document.getElementById('wx-out').innerHTML=`<div class="card-title mb12">Wilcoxon Signed-Rank Test</div>${resCard([['Variable 1',c1],['Variable 2',c2],['W statistic',W],['n (pairs)',np],['z statistic',f(z,4)],['p-value (2-tailed)',pv(p)]],p,0.05)}`;
+}
+function runKW(){
+  const dep=document.getElementById('kw-dep').value,grp=document.getElementById('kw-grp').value;
+  const gm={};S.data.forEach(r=>{if(!gm[r[grp]])gm[r[grp]]=[];gm[r[grp]].push(+r[dep]||0);});
+  const {H,df,p}=Stat.kw(Object.values(gm));
+  document.getElementById('kw-out').innerHTML=`<div class="card-title mb12">Kruskal-Wallis H Test</div>${resCard([['Dependent',dep],['Factor',grp],['H statistic',f(H,4)],['df',df],['Groups',Object.keys(gm).length],['p-value',pv(p)]],p,0.05)}`;
+}
+function runChiGOF(){
+  const col=document.getElementById('chi-v').value;
+  const vals=S.data.map(r=>String(r[col]||'')).filter(v=>v);
+  const {chi,df,freq,exp,p}=Stat.chiGOF(vals);
+  const rows=Object.entries(freq).map(([k,n])=>`<tr><td>${k}</td><td class="mono">${n}</td><td class="mono">${f(exp,1)}</td><td class="mono">${f((n-exp)**2/exp,4)}</td></tr>`).join('');
+  document.getElementById('chi-out').innerHTML=`<div class="card-title mb12">Chi-Square Goodness-of-Fit: ${col}</div>
+    <div class="tbl-wrap mb12"><table class="tbl"><thead><tr><th>Category</th><th>Observed</th><th>Expected</th><th>Contribution</th></tr></thead><tbody>${rows}</tbody></table></div>
+    ${resCard([['χ² statistic',f(chi,4)],['df',df],['p-value',pv(p)],['N',vals.length]],p,0.05)}`;
+}
+
+/* ══════════════════════════════════════════════════════
+   REGRESSION
+══════════════════════════════════════════════════════ */
+function renderReg(){
+  if(!needData('reg-gate','reg-body'))return;
+  ['sl-y','sl-x','mr-y'].forEach(id=>{const s=document.getElementById(id);if(s)s.innerHTML=S.nums.map(c=>`<option>${c}</option>`).join('');});
+  const mx=document.getElementById('mr-xs');if(mx)mx.innerHTML=S.nums.map(c=>`<option>${c}</option>`).join('');
+  if(S.nums.length>1)document.getElementById('sl-x').selectedIndex=1;
+}
+function regTab(id,el){['sl','mr'].forEach(t=>document.getElementById('rt-'+t).style.display='none');document.querySelectorAll('#pg-regression .tab').forEach(b=>b.classList.remove('on'));document.getElementById('rt-'+id).style.display='block';el.classList.add('on');}
+function runSLR(){
+  const yc=document.getElementById('sl-y').value,xc=document.getElementById('sl-x').value;
+  const xv=gnum(xc),yv=gnum(yc);
+  const {slope,intercept,r2,yh,se,ses,ts,ps,adj_r2}=Stat.linReg(xv,yv);
+  const r=Math.sqrt(r2)*(slope>=0?1:-1);
+  document.getElementById('slr-out').innerHTML=`<div class="card-title mb12">Linear Regression: ${yc} ~ ${xc}</div>
+    <div class="result-block mb12"><h4>Model Summary</h4>${rtable([['R',f(r,6)],['R²',f(r2,6)],['Adjusted R²',f(adj_r2,6)],['Std Error of Est.',f(se,6)]])}</div>
+    <div class="result-block mb12"><h4>ANOVA Table</h4>
+    <table class="tbl"><thead><tr><th>Source</th><th>SS</th><th>df</th><th>MS</th><th>F</th></tr></thead><tbody>
+    <tr><td>Regression</td><td class="mono">${f(yv.reduce((s,v)=>s+(v-Stat.mean(yv))**2,0)*r2,3)}</td><td>1</td><td class="mono">—</td><td class="mono">${f(ts**2,3)}</td></tr>
+    <tr><td>Residual</td><td class="mono">${f(yv.reduce((s,v,i)=>s+(v-yh[i])**2,0),3)}</td><td>${xv.length-2}</td><td class="mono">—</td><td></td></tr>
+    </tbody></table></div>
+    <div class="result-block"><h4>Coefficients</h4>
+    <table class="tbl"><thead><tr><th>Term</th><th>B</th><th>Std Error</th><th>t</th><th>p</th></tr></thead><tbody>
+    <tr><td>Constant (α)</td><td class="mono">${f(intercept,6)}</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td></tr>
+    <tr><td>${xc} (β)</td><td class="mono">${f(slope,6)}</td><td class="mono">${f(ses,6)}</td><td class="mono">${f(ts,4)}</td><td class="mono"><span class="badge ${sigBd(ps)}">${pv(ps)}</span></td></tr>
+    </tbody></table></div>
+    <div class="insight ${r2>.7?'ins-green':r2>.4?'ins-blue':'ins-amber'} mt12"><div class="insight-title">Model explains ${f(r2*100,2)}% of variance (R² = ${f(r2,4)})</div><div class="insight-body">Equation: ${yc} = ${f(slope,4)} × ${xc} + ${f(intercept,4)}. ${r2>.7?'Excellent fit — reliable for prediction.':r2>.4?'Moderate fit. Consider adding predictors for better accuracy.':'Weak fit — explore additional variables or transformations.'}</div></div>`;
+  document.getElementById('slr-eq').textContent=`ŷ = ${f(slope,4)}x + ${f(intercept,4)}`;
+  document.getElementById('slr-chart-card').style.display='block';
+  const xs=[...xv].sort((a,b)=>a-b);
+  mkChart('ch-slr',{type:'scatter',data:{datasets:[
+    {label:'Data points',data:xv.map((x,i)=>({x,y:yv[i]})),backgroundColor:'rgba(77,133,255,0.35)',borderColor:'rgba(77,133,255,0.7)',pointRadius:4,pointHoverRadius:7},
+    {type:'line',label:'Regression line',data:xs.map(x=>({x,y:slope*x+intercept})),borderColor:'#f0614c',borderWidth:2.5,pointRadius:0,fill:false,order:0}
+  ]},options:{scales:{x:{title:{display:true,text:xc,color:'var(--text-muted)',font:{size:11}}},y:{title:{display:true,text:yc,color:'var(--text-muted)',font:{size:11}}}}}});
+}
+function runMR(){
+  const yc=document.getElementById('mr-y').value;
+  const xcs=[...document.getElementById('mr-xs').selectedOptions].map(o=>o.value).filter(c=>c!==yc);
+  if(!xcs.length){toast('Select at least one predictor','err');return;}
+  const Y=gnum(yc),Xs=xcs.map(c=>gnum(c));
+  const n=Math.min(Y.length,...Xs.map(x=>x.length));
+  const {beta,r2,adj_r2}=Stat.multiReg(Y.slice(0,n),Xs.map(x=>x.slice(0,n)));
+  document.getElementById('mr-out').innerHTML=`<div class="card">
+    <div class="card-title mb12">Multiple Regression: ${yc} ~ ${xcs.join(' + ')}</div>
+    <div class="result-block mb12"><h4>Model Summary</h4>${rtable([['R²',f(r2,6)],['Adjusted R²',f(adj_r2,6)],['Predictors',xcs.length],['N',n]])}</div>
+    <div class="result-block"><h4>Coefficients</h4>
+    <table class="tbl"><thead><tr><th>Term</th><th>B (unstd.)</th></tr></thead><tbody>
+    <tr><td>Constant (α)</td><td class="mono">${f(beta[0],6)}</td></tr>
+    ${xcs.map((c,i)=>`<tr><td>${c} (β${i+1})</td><td class="mono">${f(beta[i+1],6)}</td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="insight ${r2>.7?'ins-green':r2>.4?'ins-blue':'ins-amber'} mt12"><div class="insight-title">R² = ${f(r2,4)} (${f(r2*100,1)}% variance explained)</div><div class="insight-body">Adjusted R² = ${f(adj_r2,4)}. ${r2>.7?'Excellent model fit.':r2>.4?'Moderate fit — model captures main predictors.':'Consider alternative predictors or non-linear models.'}</div></div></div>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   CORRELATION
+══════════════════════════════════════════════════════ */
+function renderCorr(){
+  if(!needData('corr-gate','corr-body'))return;
+  const cols=S.nums.slice(0,8);
+  ['sc-x','sc-y'].forEach((id,i)=>{const s=document.getElementById(id);s.innerHTML=cols.map(c=>`<option>${c}</option>`).join('');s.selectedIndex=i%cols.length;});
+  buildCorrMatrix();updateScatter();
+}
+function buildCorrMatrix(){
+  const method=document.getElementById('corr-method').value;
+  const cols=S.nums.slice(0,8),fn=method==='Spearman'?Stat.spearman:Stat.pearson;
+  const M=cols.map(c1=>cols.map(c2=>fn(gnum(c1),gnum(c2))));
+  let h=`<div class="corr-grid"><div class="corr-row"><div style="width:88px"></div>${cols.map(c=>`<div class="corr-hdr">${c.slice(0,6)}</div>`).join('')}</div>`;
+  M.forEach((row,i)=>{
+    h+=`<div class="corr-row"><div class="corr-lbl">${cols[i].slice(0,11)}</div>`;
+    row.forEach((r,j)=>{
+      const a=Math.abs(r);
+      const bg=i===j?'var(--bg-raised)':r>0?`rgba(77,133,255,${a*.75})`:`rgba(240,97,76,${a*.75})`;
+      const tc=a>.55?'#fff':a>.3?'var(--text-body)':'var(--text-muted)';
+      h+=`<div class="corr-cell" style="background:${bg};color:${tc}" title="${cols[i]} × ${cols[j]}: r=${f(r,4)}">${f(r,2)}</div>`;
+    });
+    h+=`</div>`;
+  });
+  document.getElementById('corr-matrix-wrap').innerHTML=h+'</div>';
+  const pairs=[];
+  for(let i=0;i<cols.length;i++)for(let j=i+1;j<cols.length;j++){const r=M[i][j];if(Math.abs(r)>.3)pairs.push({c1:cols[i],c2:cols[j],r});}
+  pairs.sort((a,b)=>Math.abs(b.r)-Math.abs(a.r));
+  document.getElementById('corr-pairs-body').innerHTML=pairs.slice(0,10).map(p=>{
+    const s=Math.abs(p.r)>.7?'Strong':Math.abs(p.r)>.4?'Moderate':'Weak';
+    const bc=Math.abs(p.r)>.7?'bd-blue':Math.abs(p.r)>.4?'bd-purple':'bd-gray';
+    const dir=p.r>0?`<span style="color:var(--green)">↑ Positive</span>`:`<span style="color:var(--red)">↓ Negative</span>`;
+    return `<tr><td>${p.c1}</td><td>${p.c2}</td><td class="mono">${f(p.r,4)}</td><td><span class="badge ${bc}">${s}</span></td><td>${dir}</td></tr>`;
+  }).join('');
+}
+function updateScatter(){
+  const cx=document.getElementById('sc-x').value,cy=document.getElementById('sc-y').value;
+  if(!cx||!cy)return;
+  const xv=gnum(cx),yv=gnum(cy),method=document.getElementById('corr-method').value;
+  const r=method==='Spearman'?Stat.spearman(xv,yv):Stat.pearson(xv,yv);
+  document.getElementById('sc-rval').textContent=`r = ${f(r,4)} (${method}) — ${Math.abs(r)>.7?'Strong':Math.abs(r)>.4?'Moderate':'Weak'} ${r>0?'positive':'negative'} correlation`;
+  mkChart('ch-scatter',{type:'scatter',data:{datasets:[{label:`${cx} vs ${cy}`,data:xv.map((x,i)=>({x,y:yv[i]})),backgroundColor:'rgba(77,133,255,0.35)',borderColor:'rgba(77,133,255,0.75)',pointRadius:4,pointHoverRadius:7}]},options:{scales:{x:{title:{display:true,text:cx,color:'var(--text-muted)',font:{size:11}}},y:{title:{display:true,text:cy,color:'var(--text-muted)',font:{size:11}}}}}});
+}
+
+/* ══════════════════════════════════════════════════════
+   FACTOR ANALYSIS / PCA
+══════════════════════════════════════════════════════ */
+function renderFA(){
+  if(!needData('fa-gate','fa-body'))return;
+  document.getElementById('fa-vars').innerHTML=S.nums.map(c=>`<option selected>${c}</option>`).join('');
+}
+function runPCA(){
+  const cols=[...document.getElementById('fa-vars').selectedOptions].map(o=>o.value);
+  if(cols.length<2){toast('Select at least 2 variables','err');return;}
+  const data=S.data.map(r=>cols.map(c=>+r[c]||0));
+  const {comps,evals,varExp}=Stat.pca(data);
+  document.getElementById('fa-out').innerHTML=`<div class="card">
+    <div class="card-title mb12">Principal Component Analysis (${cols.length} variables)</div>
+    <div class="result-block mb12"><h4>Variance Explained</h4>
+    <table class="tbl"><thead><tr><th>Component</th><th>Eigenvalue</th><th>% Variance</th><th>Cumulative %</th></tr></thead><tbody>
+    <tr><td>PC1</td><td class="mono">${f(evals[0],4)}</td><td class="mono">${f(varExp[0],2)}%</td><td class="mono">${f(varExp[0],2)}%</td></tr>
+    <tr><td>PC2</td><td class="mono">${f(evals[1],4)}</td><td class="mono">${f(varExp[1],2)}%</td><td class="mono">${f(varExp[0]+varExp[1],2)}%</td></tr>
+    </tbody></table></div>
+    <div class="result-block mb12"><h4>Component Loadings</h4>
+    <table class="tbl"><thead><tr><th>Variable</th><th>PC1 Loading</th><th>PC2 Loading</th><th>Communality</th></tr></thead><tbody>
+    ${cols.map((c,i)=>`<tr><td>${c}</td><td class="mono">${f(comps[0][i],4)}</td><td class="mono">${f(comps[1][i],4)}</td><td class="mono">${f(comps[0][i]**2+comps[1][i]**2,4)}</td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="insight ins-${varExp[0]+varExp[1]>60?'green':'blue'} mt12"><div class="insight-title">PC1+PC2 explain ${f(varExp[0]+varExp[1],1)}% of total variance</div><div class="insight-body">${varExp[0]+varExp[1]>60?'Good dimensionality reduction. The first two components capture the main structure.':'Consider extracting more components. The first two may not fully capture complexity.'} PC1 eigenvalue: ${f(evals[0],2)}, PC2: ${f(evals[1],2)}.</div></div></div>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   MEDICAL
+══════════════════════════════════════════════════════ */
+function renderMed(){
+  const nd=`<div class="empty"><span class="empty-ico">⚕️</span><div class="empty-title">Load a medical dataset</div><div class="empty-sub">The Medical module is optimized for patient datasets with clinical variables</div><div class="flex" style="justify-content:center"><button class="btn btn-success" onclick="loadSample('medical')">Load Medical Sample</button></div></div>`;
+  if(!S.data||S.module!=='medical'){document.getElementById('med-gate').innerHTML=nd;document.getElementById('med-body').style.display='none';return;}
+  document.getElementById('med-gate').innerHTML='';document.getElementById('med-body').style.display='block';
+  const d=S.data,risk=d.map(r=>+r.risk_score||0);
+  const low=d.filter(r=>r.risk_level==='low').length,med=d.filter(r=>r.risk_level==='medium').length,high=d.filter(r=>r.risk_level==='high').length,crit=d.filter(r=>r.risk_level==='critical').length;
+  const smk=d.filter(r=>r.smoker===1).length,dia=d.filter(r=>r.diabetic===1).length;
+  document.getElementById('med-tiles').innerHTML=`
+    <div class="tile" style="--tile-c:var(--accent)"><div class="tile-ico">👥</div><div class="tile-label">Total Patients</div><div class="tile-val">${d.length}</div></div>
+    <div class="tile" style="--tile-c:var(--amber)"><div class="tile-ico">⚠️</div><div class="tile-label">Mean Risk Score</div><div class="tile-val">${f(Stat.mean(risk),1)}</div><div class="tile-note">0–100 scale</div></div>
+    <div class="tile" style="--tile-c:var(--red)"><div class="tile-ico">🚨</div><div class="tile-label">High/Critical</div><div class="tile-val">${high+crit}<small> pts</small></div><div class="tile-note neg">${f((high+crit)/d.length*100,1)}% of cohort</div></div>
+    <div class="tile" style="--tile-c:var(--green)"><div class="tile-ico">✅</div><div class="tile-label">Low Risk</div><div class="tile-val">${low}<small> pts</small></div><div class="tile-note pos">${f(low/d.length*100,1)}% of cohort</div></div>`;
+  mkChart('ch-med-risk',{type:'bar',data:{labels:['Low','Medium','High','Critical'],datasets:[{data:[low,med,high,crit],backgroundColor:['rgba(34,201,126,.5)','rgba(240,180,41,.5)','rgba(251,146,60,.5)','rgba(240,97,76,.5)'],borderColor:['#22c97e','#f0b429','#fb923c','#f0614c'],borderWidth:1.5,borderRadius:5}]},options:{plugins:{legend:{display:false}}}});
+  document.getElementById('med-bars').innerHTML=[
+    {l:'Low risk',n:low,c:'var(--green)'},{l:'Medium risk',n:med,c:'var(--amber)'},
+    {l:'High risk',n:high,c:'var(--orange,#fb923c)'},{l:'Critical',n:crit,c:'var(--red)'}
+  ].map(({l,n,c})=>`<div class="pbar-wrap"><div class="pbar-info"><span>${l}</span><span>${n} pts · ${f(n/d.length*100,1)}%</span></div><div class="pbar"><div class="pbar-fill" style="width:${n/d.length*100}%;background:${c}"></div></div></div>`).join('')+
+  `<hr style="border:none;border-top:1px solid var(--border);margin:12px 0"><div class="flex" style="gap:16px;font-size:12px;color:var(--text-body)"><span>🚬 Smokers: <strong style="color:var(--text-hi)">${smk}</strong> (${f(smk/d.length*100,1)}%)</span><span>💉 Diabetic: <strong style="color:var(--text-hi)">${dia}</strong> (${f(dia/d.length*100,1)}%)</span></div>`;
+  const ages=d.map(r=>+r.age||0);const {labels:al,counts:ac}=hist(ages,8);
+  mkChart('ch-med-age',{type:'bar',data:{labels:al,datasets:[{label:'Patients',data:ac,backgroundColor:'rgba(77,133,255,0.45)',borderColor:'#4d85ff',borderWidth:1,borderRadius:3}]},options:{plugins:{legend:{display:false}}}});
+  const bmis=d.map(r=>+r.bmi||0);
+  mkChart('ch-med-bmi',{type:'scatter',data:{datasets:[{label:'BMI vs Risk',data:bmis.map((b,i)=>({x:b,y:d[i].risk_score})),backgroundColor:'rgba(157,124,240,0.35)',borderColor:'rgba(157,124,240,0.7)',pointRadius:3}]},options:{scales:{x:{title:{display:true,text:'BMI',color:'var(--text-muted)',font:{size:10}}},y:{title:{display:true,text:'Risk Score',color:'var(--text-muted)',font:{size:10}}}}}});
+  const dxFreq={};d.forEach(r=>{dxFreq[r.diagnosis]=(dxFreq[r.diagnosis]||0)+1;});
+  const dxE=Object.entries(dxFreq).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  mkChart('ch-med-dx',{type:'bar',data:{labels:dxE.map(e=>e[0]),datasets:[{label:'Count',data:dxE.map(e=>e[1]),backgroundColor:'rgba(25,197,228,0.4)',borderColor:'#19c5e4',borderWidth:1,borderRadius:3}]},options:{plugins:{legend:{display:false}},indexAxis:'y'}});
+  document.getElementById('med-tbl-body').innerHTML=[...d].sort((a,b)=>b.risk_score-a.risk_score).map(r=>`<tr><td>${r.patient_id}</td><td>${r.age}</td><td>${r.gender}</td><td>${r.diagnosis}</td><td class="mono">${r.bmi}</td><td class="mono">${r.systolic_bp}</td><td class="mono">${r.glucose}</td><td class="mono">${r.cholesterol}</td><td>${r.smoker?'<span class="badge bd-red">Yes</span>':'No'}</td><td class="mono"><strong>${r.risk_score}</strong></td><td><span class="badge ${r.risk_level==='critical'||r.risk_level==='high'?'bd-red':r.risk_level==='medium'?'bd-amber':'bd-green'}">${r.risk_level}</span></td></tr>`).join('');
+}
+function sortMed(){S.data.sort((a,b)=>b.risk_score-a.risk_score);renderMed();}
+
+/* ══════════════════════════════════════════════════════
+   ARCHAEOLOGY
+══════════════════════════════════════════════════════ */
+function renderArch(){
+  const nd=`<div class="empty"><span class="empty-ico">⚱️</span><div class="empty-title">Load an archaeology dataset</div><div class="empty-sub">The Archaeology module provides artifact classification, site distribution, and temporal analysis</div><div class="flex" style="justify-content:center"><button class="btn btn-amber" onclick="loadSample('arch')">Load Archaeology Sample</button></div></div>`;
+  if(!S.data||S.module!=='archaeology'){document.getElementById('arch-gate').innerHTML=nd;document.getElementById('arch-body').style.display='none';return;}
+  document.getElementById('arch-gate').innerHTML='';document.getElementById('arch-body').style.display='block';
+  const d=S.data,sites={},cats={},periods={};
+  d.forEach(r=>{sites[r.site]=(sites[r.site]||0)+1;cats[r.category]=(cats[r.category]||0)+1;periods[r.period]=(periods[r.period]||0)+1;});
+  document.getElementById('arch-tiles').innerHTML=`
+    <div class="tile" style="--tile-c:var(--amber)"><div class="tile-label">Artifacts</div><div class="tile-val">${d.length}</div></div>
+    <div class="tile" style="--tile-c:var(--blue,var(--accent))"><div class="tile-label">Sites</div><div class="tile-val">${Object.keys(sites).length}</div></div>
+    <div class="tile" style="--tile-c:var(--purple)"><div class="tile-label">Categories</div><div class="tile-val">${Object.keys(cats).length}</div></div>
+    <div class="tile" style="--tile-c:var(--green)"><div class="tile-label">Periods</div><div class="tile-val">${Object.keys(periods).length}</div></div>`;
+  mkChart('ch-arch-cat',{type:'doughnut',data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats),backgroundColor:PAL.map(c=>c+'88'),borderColor:PAL,borderWidth:1.5}]},options:{scales:{},plugins:{legend:{position:'right'}}}});
+  const se=Object.entries(sites).sort((a,b)=>b[1]-a[1]);
+  mkChart('ch-arch-site',{type:'bar',data:{labels:se.map(e=>e[0]),datasets:[{label:'Artifacts',data:se.map(e=>e[1]),backgroundColor:'rgba(240,180,41,0.45)',borderColor:'#f0b429',borderWidth:1.5,borderRadius:4}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{maxRotation:30}}}}});
+  const pe=Object.entries(periods).sort((a,b)=>a[0].localeCompare(b[0]));
+  mkChart('ch-arch-period',{type:'line',data:{labels:pe.map(e=>e[0]),datasets:[{label:'Artifacts',data:pe.map(e=>e[1]),borderColor:'#9d7cf0',backgroundColor:'rgba(157,124,240,0.12)',borderWidth:2.5,tension:.4,fill:true,pointBackgroundColor:'#9d7cf0',pointRadius:5}]},options:{plugins:{legend:{display:false}}}});
+  mkChart('ch-arch-dw',{type:'scatter',data:{datasets:[{label:'Depth vs Weight',data:d.map(r=>({x:+r.depth_m||0,y:+r.weight_g||0})),backgroundColor:'rgba(25,197,228,0.35)',borderColor:'rgba(25,197,228,0.7)',pointRadius:3.5}]},options:{scales:{x:{title:{display:true,text:'Depth (m)',color:'var(--text-muted)',font:{size:10}}},y:{title:{display:true,text:'Weight (g)',color:'var(--text-muted)',font:{size:10}}}}}});
+  document.getElementById('arch-tbl-body').innerHTML=d.map(r=>`<tr><td>${r.artifact_id}</td><td>${r.site}</td><td>${r.category}</td><td>${r.material}</td><td>${r.period}</td><td class="mono">${r.length_cm}</td><td class="mono">${r.weight_g}</td><td class="mono">${r.depth_m}</td><td><span class="badge ${r.condition==='excellent'?'bd-green':r.condition==='good'?'bd-blue':r.condition==='fair'?'bd-amber':'bd-red'}">${r.condition}</span></td><td style="font-size:10.5px;color:var(--text-muted)">${r.classification}</td></tr>`).join('');
+}
+
+/* ══════════════════════════════════════════════════════
+   CHART BUILDER
+══════════════════════════════════════════════════════ */
+function renderChartBuilder(){
+  if(!needData('charts-gate','charts-body'))return;
+  document.getElementById('chart-vx').innerHTML=S.cols.map(c=>`<option>${c}</option>`).join('');
+  document.getElementById('chart-vy').innerHTML=S.nums.map(c=>`<option>${c}</option>`).join('');
+  renderCustomChart();
+}
+function renderCustomChart(){
+  const type=document.getElementById('chart-type').value;
+  const vx=document.getElementById('chart-vx').value,vy=document.getElementById('chart-vy').value;
+  const needY=['Scatter Plot','Line Chart','Area Chart'];
+  document.getElementById('chart-vy-wrap').style.display=needY.includes(type)?'block':'none';
+  const xvals=S.data.map(r=>r[vx]);const isN=typeof xvals[0]==='number';
+  if((type==='Histogram'||type==='Box Plot (approx.)')&&isN){
+    const {labels,counts}=hist(xvals.filter(v=>typeof v==='number'));
+    if(type==='Histogram'){mkChart('ch-custom',{type:'bar',data:{labels,datasets:[{label:vx,data:counts,backgroundColor:'rgba(77,133,255,0.45)',borderColor:'#4d85ff',borderWidth:1,borderRadius:4}]},options:{plugins:{legend:{display:false}}}});}
+    else{const sv=[...xvals].sort((a,b)=>a-b);const n=sv.length,q1=sv[Math.floor(n*.25)],q3=sv[Math.floor(n*.75)];mkChart('ch-custom',{type:'bar',data:{labels:['Min','Q1 (25%)',`Median (${f(Stat.median(sv),1)})`, 'Q3 (75%)','Max'],datasets:[{label:vx,data:[Math.min(...sv),q1,Stat.median(sv),q3,Math.max(...sv)],backgroundColor:['rgba(77,133,255,0.3)','rgba(77,133,255,0.5)','rgba(77,133,255,0.9)','rgba(77,133,255,0.5)','rgba(77,133,255,0.3)'],borderColor:'#4d85ff',borderWidth:1.5,borderRadius:4}]},options:{plugins:{legend:{display:false}}}});}
+  }else if(type==='Bar Chart'||type==='Horizontal Bar'){
+    const ft=ftable(xvals.map(String)).slice(0,12);
+    mkChart('ch-custom',{type:'bar',data:{labels:ft.map(r=>r.val),datasets:[{label:'Count',data:ft.map(r=>r.n),backgroundColor:PAL.map(c=>c+'70'),borderColor:PAL,borderWidth:1.5,borderRadius:4}]},options:{plugins:{legend:{display:false}},indexAxis:type==='Horizontal Bar'?'y':'x'}});
+  }else if(type==='Pie Chart'||type==='Doughnut'){
+    const ft=ftable(xvals.map(String)).slice(0,8);
+    mkChart('ch-custom',{type:type==='Pie Chart'?'pie':'doughnut',data:{labels:ft.map(r=>r.val),datasets:[{data:ft.map(r=>r.n),backgroundColor:PAL.map(c=>c+'88'),borderColor:PAL,borderWidth:1.5}]},options:{scales:{}}});
+  }else if(type==='Scatter Plot'){
+    const xn=gnum(vx),yn=gnum(vy);
+    mkChart('ch-custom',{type:'scatter',data:{datasets:[{label:`${vx} vs ${vy}`,data:xn.map((x,i)=>({x,y:yn[i]})),backgroundColor:'rgba(34,201,126,0.4)',borderColor:'rgba(34,201,126,0.7)',pointRadius:4}]},options:{scales:{x:{title:{display:true,text:vx,color:'var(--text-muted)',font:{size:11}}},y:{title:{display:true,text:vy,color:'var(--text-muted)',font:{size:11}}}}}});
+  }else if(type==='Line Chart'||type==='Area Chart'){
+    const xn=gnum(vx),yn=gnum(vy);
+    mkChart('ch-custom',{type:'line',data:{labels:xn.map(v=>f(v,1)),datasets:[{label:vy,data:yn,borderColor:'#4d85ff',backgroundColor:'rgba(77,133,255,0.1)',borderWidth:2.5,tension:.4,fill:type==='Area Chart',pointRadius:2}]},options:{}});
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   REPORT
+══════════════════════════════════════════════════════ */
+function genReport(){
+  if(!S.data){toast('Load a dataset first','err');return;}
+  const title=document.getElementById('rpt-title').value||'StatIQ Report';
+  const author=document.getElementById('rpt-author').value;
+  const org=document.getElementById('rpt-org').value;
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  const s1=document.getElementById('rpt-s1').checked,s2=document.getElementById('rpt-s2').checked,s3=document.getElementById('rpt-s3').checked,s4=document.getElementById('rpt-s4').checked,s5=document.getElementById('rpt-s5').checked,s6=document.getElementById('rpt-s6').checked;
+  let statsHtml='',corrHtml='',insHtml='',freqHtml='',backHtml='';
+  if(s2){const cols=S.nums.slice(0,8);statsHtml=`<h2>Descriptive Statistics</h2><table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-size:12px;width:100%"><thead><tr style="background:#f7fafc"><th>Variable</th><th>N</th><th>Mean</th><th>Median</th><th>Std Dev</th><th>Variance</th><th>Min</th><th>Max</th><th>Skewness</th><th>Kurtosis</th></tr></thead><tbody>${cols.map(c=>{const v=gnum(c);return `<tr><td>${c}</td><td>${v.length}</td><td>${f(Stat.mean(v),4)}</td><td>${f(Stat.median(v),4)}</td><td>${f(Stat.sd(v),4)}</td><td>${f(Stat.variance(v),4)}</td><td>${f(Math.min(...v),3)}</td><td>${f(Math.max(...v),3)}</td><td>${f(Stat.skew(v),4)}</td><td>${f(Stat.kurt(v),4)}</td></tr>`;}).join('')}</tbody></table>`;}
+  if(s3&&S.nums.length>=2){const cols=S.nums.slice(0,6);corrHtml=`<h2>Correlation Matrix (Pearson r)</h2><table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-size:12px"><thead><tr><th></th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${cols.map(c1=>`<tr><td><strong>${c1}</strong></td>${cols.map(c2=>`<td style="background:${Stat.pearson(gnum(c1),gnum(c2))>.5?'#e8f0fe':Stat.pearson(gnum(c1),gnum(c2))<-.5?'#fde8e8':'#fff'}">${f(Stat.pearson(gnum(c1),gnum(c2)),3)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;}
+  if(s4){const insEls=document.querySelectorAll('#insights-list .insight');insHtml=`<h2>AI-Generated Insights</h2>${[...insEls].map(el=>`<div style="padding:10px 14px;margin:8px 0;border-left:4px solid #4d85ff;background:#f8f9ff;border-radius:4px"><strong>${el.querySelector('.insight-title')?.textContent||''}</strong><br><span style="font-size:12px">${el.querySelector('.insight-body')?.textContent||''}</span></div>`).join('')}`;}
+  if(s5){freqHtml=`<h2>Frequency Tables</h2>${S.cats.slice(0,3).map(c=>{const ft=ftable(gcat(c)).slice(0,10);return `<h3>${c}</h3><table border="1" cellpadding="5" style="border-collapse:collapse;font-size:12px"><thead><tr><th>Value</th><th>N</th><th>%</th><th>Cumulative %</th></tr></thead><tbody>${ft.map(r=>`<tr><td>${r.val}</td><td>${r.n}</td><td>${f(r.pct,1)}%</td><td>${f(r.cum,1)}%</td></tr>`).join('')}</tbody></table>`;}).join('')}`;}
+  if(s6){backHtml=`<h2>PHP Backend Architecture</h2><ul style="font-size:12px;line-height:2"><li><strong>Framework:</strong> Laravel 11 with Sanctum authentication</li><li><strong>Excel Parsing:</strong> PhpSpreadsheet (PhpOffice)</li><li><strong>CSV Parsing:</strong> League/CSV with auto-delimiter detection</li><li><strong>Database:</strong> MySQL 8 — datasets, analysis_results, reports, medical_patients, archaeology_artifacts</li><li><strong>Queue System:</strong> Laravel Horizon + Redis for async heavy computations</li><li><strong>PDF Export:</strong> DomPDF (barryvdh/laravel-dompdf)</li><li><strong>API:</strong> RESTful JSON API — 30+ endpoints across 6 modules</li></ul>`;}
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title><style>body{font-family:Georgia,serif;max-width:960px;margin:40px auto;padding:0 24px;color:#1a1a2e;line-height:1.6}h1{font-size:30px;color:#0f1117;border-bottom:3px solid #4d85ff;padding-bottom:12px;margin-bottom:6px}h2{font-size:18px;color:#2d3748;margin:28px 0 12px;font-family:sans-serif}h3{font-size:14px;margin:16px 0 8px;color:#4a5270}table{width:100%;border-collapse:collapse;margin:12px 0;font-size:12px}th,td{padding:7px 11px;border:1px solid #e2e8f0;text-align:left}th{background:#f7fafc;font-weight:600;font-family:sans-serif}tr:nth-child(even){background:#fdfdfd}.meta{color:#8b93ad;font-size:12px;margin-bottom:8px}</style></head>
+  <body><h1>📊 ${title}</h1><p class="meta">Author: ${author} | Organization: ${org} | Generated: ${new Date().toLocaleString()} | StatIQ v3.0</p>
+  ${s1?`<h2>Dataset Overview</h2><table><tbody><tr><th>Dataset Name</th><td>${S.name}</td></tr><tr><th>Rows</th><td>${S.rows}</td></tr><tr><th>Columns</th><td>${S.cols.length}</td></tr><tr><th>Numeric Variables</th><td>${S.nums.length}: ${S.nums.join(', ')}</td></tr><tr><th>Categorical Variables</th><td>${S.cats.length}: ${S.cats.join(', ')}</td></tr><tr><th>Module</th><td>${S.module}</td></tr></tbody></table>`:''}
+  ${statsHtml}${corrHtml}${insHtml}${freqHtml}${backHtml}
+  <hr style="margin-top:40px;border-color:#e2e8f0"><p style="font-size:11px;color:#8b93ad;text-align:center">Generated by StatIQ v3.0 — Professional Statistical Analysis Platform</p></body></html>`;
+  const blob=new Blob([html],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${title.replace(/\s+/g,'_')}.html`;a.click();
+  toast('Report downloaded!','ok');
+  document.getElementById('rpt-preview').innerHTML=`<div class="insight ins-green"><div class="insight-title">Report exported successfully</div><div class="insight-body">Sections included: ${[s1&&'Overview',s2&&'Descriptive Stats',s3&&'Correlation',s4&&'Insights',s5&&'Frequencies',s6&&'Backend'].filter(Boolean).join(', ')}. In production PHP, DomPDF generates a formatted PDF.</div></div>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════ */
+buildManualGrid();
+setTimeout(()=>loadSample('medical'),120);
+</script>
+</body>
+</html>
